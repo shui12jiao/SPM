@@ -27,6 +27,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		router:     gin.Default(),
 	}
 
+	registerValidation()
 	server.setupRouter()
 	return server, nil
 }
@@ -36,14 +37,14 @@ func (server *Server) setupRouter() {
 
 	// ==学生端==
 	v1Router := router.Group("/v1")
-	v1Router.POST("/login", server.login)     //用户登录
-	v1Router.POST("/refresh", server.refresh) //刷新AccessToken
+	v1Router.POST("/login", server.loginUser)            //用户登录
+	v1Router.POST("/refresh", server.refreshAccessToken) //刷新AccessToken
 
 	authV1Router := v1Router.Group("").Use(authMiddleware(server.tokenMaker))
 	// 自习室
 	authV1Router.GET("/room", server.listRoom)                 //获取自习室列表
 	authV1Router.GET("/room/:id", server.getRoom)              //获取自习室详情
-	authV1Router.GET("/room/:id/seat", server.listRoomSeat)    //获取自习室座位列表
+	authV1Router.GET("/room/:id/seat", server.listSeat)        //获取自习室座位列表
 	authV1Router.POST("/room/:id/reserve", server.reserveRoom) //预约自习室(包括取消预约)
 	// 预约
 	authV1Router.GET("/reservation/:id", server.getReservation)   //获取预约详情
@@ -54,7 +55,7 @@ func (server *Server) setupRouter() {
 	authV1Router.GET("/me/reservation", server.listUserReservation) //获取我的预约历史记录
 
 	// ==管理端==
-	adminRouter := router.Group("/admin").Use(authMiddleware(server.tokenMaker))
+	adminRouter := router.Group("/admin").Use(adminMiddleware(server.tokenMaker))
 	// 自习室
 	adminRouter.GET("/room", server.listRoom)          //获取自习室列表
 	adminRouter.POST("/room", server.createRoom)       //创建自习室
@@ -62,7 +63,7 @@ func (server *Server) setupRouter() {
 	adminRouter.PUT("/room/:id", server.updateRoom)    //更新自习室
 	adminRouter.DELETE("/room/:id", server.deleteRoom) //删除自习室
 	// 座位
-	adminRouter.GET("/room/:id/seat", server.listRoomSeat)           //获取自习室座位列表
+	adminRouter.GET("/room/:id/seat", server.listSeat)               //获取自习室座位列表
 	adminRouter.POST("/room/:id/seat", server.createSeat)            //创建座位
 	adminRouter.PUT("/room/:id/seat/:seat_id", server.updateSeat)    //更新座位
 	adminRouter.DELETE("/room/:id/seat/:seat_id", server.deleteSeat) //删除座位

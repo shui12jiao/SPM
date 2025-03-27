@@ -14,7 +14,7 @@ var (
 
 // token管理器
 type Maker interface {
-	CreateToken(username string, duration time.Duration) (string, *Payload, error)
+	CreateToken(userID int, userRole string, duration time.Duration) (string, *Payload, error)
 	VerifyToken(token string) (*Payload, error)
 }
 
@@ -23,14 +23,11 @@ type Payload struct {
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 
-	UserID         int32  `json:"user_id"`
-	Username       string `json:"username"`
-	UserDepartment string `json:"user_department"`
-	UserRole       string `json:"user_role"`
-	UserEmail      string `json:"user_email"`
+	UserID   int    `json:"user_id"`
+	UserRole string `json:"user_role"`
 }
 
-func NewPayload(username string, duration time.Duration) (*Payload, error) {
+func NewPayload(userID int, userRole string, duration time.Duration) (*Payload, error) {
 	tokenID, err := uuid.NewRandom()
 	if err != nil {
 		return nil, err
@@ -38,9 +35,11 @@ func NewPayload(username string, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
 		ID:        tokenID,
-		Username:  username,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
+
+		UserID:   userID,
+		UserRole: userRole,
 	}
 	return payload, err
 }

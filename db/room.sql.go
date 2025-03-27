@@ -70,19 +70,27 @@ func (q *Queries) GetRoom(ctx context.Context, id int32) (Room, error) {
 const listRoom = `-- name: ListRoom :many
 SELECT id, name, department, open_time, close_time, qr_code, is_active FROM room 
 WHERE
-  ($1::VARCHAR(50) IS NULL OR department = $1) AND
-  ($2::BOOLEAN IS NULL OR is_active = $2)
+  ($3::VARCHAR(50) IS NULL OR department = $3) AND
+  ($4::BOOLEAN IS NULL OR is_active = $4)
 ORDER BY id DESC
+LIMIT $1 OFFSET $2
 `
 
 type ListRoomParams struct {
+	Limit      int32          `json:"limit"`
+	Offset     int32          `json:"offset"`
 	Department sql.NullString `json:"department"`
 	IsActive   sql.NullBool   `json:"is_active"`
 }
 
 // department,is_active作为可能查询条件
 func (q *Queries) ListRoom(ctx context.Context, arg ListRoomParams) ([]Room, error) {
-	rows, err := q.db.QueryContext(ctx, listRoom, arg.Department, arg.IsActive)
+	rows, err := q.db.QueryContext(ctx, listRoom,
+		arg.Limit,
+		arg.Offset,
+		arg.Department,
+		arg.IsActive,
+	)
 	if err != nil {
 		return nil, err
 	}

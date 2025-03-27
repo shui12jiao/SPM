@@ -12,7 +12,8 @@ SELECT * FROM room
 WHERE
   (sqlc.narg(department)::VARCHAR(50) IS NULL OR department = sqlc.narg(department)) AND
   (sqlc.narg(is_active)::BOOLEAN IS NULL OR is_active = sqlc.narg(is_active))
-ORDER BY id DESC;
+ORDER BY id DESC
+LIMIT $1 OFFSET $2;
 
 
 -- name: UpdateRoom :one
