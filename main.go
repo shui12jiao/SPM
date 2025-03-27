@@ -1,6 +1,8 @@
 package main
 
 import (
+	"man/api"
+	"man/db"
 	"man/util"
 	"os"
 
@@ -18,8 +20,23 @@ func main() {
 	}
 
 	// 初始化数据库, 执行迁移
-	db := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
+	conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
 
 	// 创建存储
-	store := db.NewStore(db)
+	store := db.NewStore(conn)
+
+	// 运行服务
+	// TODO
+
+	// HTTP服务器
+	runHTTPServer(config, store)
+}
+
+func runHTTPServer(config util.Config, store db.Store) {
+	server, err := api.NewServer(config, store)
+	if err != nil {
+		log.Fatal().Err(err).Msg("无法创建服务器")
+		return
+	}
+	server.Start(config.HTTPServerAddress)
 }

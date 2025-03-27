@@ -39,11 +39,11 @@ func (server *Server) setupRouter() {
 	v1Router.POST("/login", server.login)     //用户登录
 	v1Router.POST("/refresh", server.refresh) //刷新AccessToken
 
-	// 需要认证的路由
 	authV1Router := v1Router.Group("").Use(authMiddleware(server.tokenMaker))
 	// 自习室
 	authV1Router.GET("/room", server.listRoom)                 //获取自习室列表
 	authV1Router.GET("/room/:id", server.getRoom)              //获取自习室详情
+	authV1Router.GET("/room/:id/seat", server.listRoomSeat)    //获取自习室座位列表
 	authV1Router.POST("/room/:id/reserve", server.reserveRoom) //预约自习室(包括取消预约)
 	// 预约
 	authV1Router.GET("/reservation/:id", server.getReservation)   //获取预约详情
@@ -56,15 +56,25 @@ func (server *Server) setupRouter() {
 	// ==管理端==
 	adminRouter := router.Group("/admin").Use(authMiddleware(server.tokenMaker))
 	// 自习室
-	adminRouter.GET("/room", server.listRoom)                            //获取自习室列表
-	adminRouter.GET("/room/:id", server.getRoom)                         //获取自习室详情
-	adminRouter.POST("/room", server.createRoom)                         //创建自习室
-	adminRouter.PUT("/room/:id", server.updateRoom)                      //更新自习室
-	adminRouter.DELETE("/room/:id", server.deleteRoom)                   //删除自习室
-	adminRouter.GET("/room/:id/reservation", server.listRoomReservation) //获取自习室预约历史记录
+	adminRouter.GET("/room", server.listRoom)          //获取自习室列表
+	adminRouter.POST("/room", server.createRoom)       //创建自习室
+	adminRouter.GET("/room/:id", server.getRoom)       //获取自习室详情
+	adminRouter.PUT("/room/:id", server.updateRoom)    //更新自习室
+	adminRouter.DELETE("/room/:id", server.deleteRoom) //删除自习室
+	// 座位
+	adminRouter.GET("/room/:id/seat", server.listRoomSeat)           //获取自习室座位列表
+	adminRouter.POST("/room/:id/seat", server.createSeat)            //创建座位
+	adminRouter.PUT("/room/:id/seat/:seat_id", server.updateSeat)    //更新座位
+	adminRouter.DELETE("/room/:id/seat/:seat_id", server.deleteSeat) //删除座位
 	// 预约
-	adminRouter.GET("/reservation", server.listAllReservation) //获取所有预约历史记录
-	adminRouter.GET("/reservation/:id", server.getReservation) //获取预约详情
+	adminRouter.GET("/room/:id/reservation", server.listRoomReservation) //获取自习室预约历史记录
+	adminRouter.GET("/reservation", server.listAllReservation)           //获取所有预约历史记录
+	adminRouter.GET("/reservation/:id", server.getReservation)           //获取预约详情
+	// 用户
+	adminRouter.GET("/user", server.listUser)          //获取用户列表
+	adminRouter.GET("/user/:id", server.getUser)       //获取用户详情
+	adminRouter.PUT("/user/:id", server.updateUser)    //更新用户信息
+	adminRouter.DELETE("/user/:id", server.deleteUser) //删除用户
 
 }
 

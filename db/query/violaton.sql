@@ -8,9 +8,10 @@ AND user_id = $1
 RETURNING *;
 
 -- 获取用户违约详情（含预约信息）
--- name: GetUserViolations :many
+-- name: ListUserViolation :many
 SELECT v.*, r.start_time, r.end_time, s.number as seat_number
 FROM violation v
 JOIN reservation r ON v.reservation_id = r.id
 JOIN seat s ON r.seat_id = s.id
-WHERE v.user_id = $1;
+WHERE v.user_id = $1
+ORDER BY v.created_at DESC;

@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	authorizationHeaderKey  = "authorization"
-	authorizationTypeBearer = "bearer"
-	authorizationPayloadKey = "authorization_payload"
+	authorizationHeaderKey  = "authorization"         // 用于获取token的header key
+	authorizationTypeBearer = "bearer"                // token类型, bearer一般用于JWT
+	authorizationPayloadKey = "authorization_payload" // 用于存储解析后的token payload的key
 )
 
 func authMiddleware(tokenMaker util.Maker) gin.HandlerFunc {
@@ -21,21 +21,21 @@ func authMiddleware(tokenMaker util.Maker) gin.HandlerFunc {
 		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
 
 		if len(authorizationHeader) == 0 {
-			err := errors.New("authorization is not provided")
+			err := errors.New("必须提供authorization header")
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
 
 		fields := strings.Fields(authorizationHeader)
 		if len(fields) < 2 {
-			err := errors.New("invalid authorization header format")
+			err := errors.New("无效的authorization header")
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
 
 		authorizationType := strings.ToLower(fields[0])
 		if authorizationType != authorizationTypeBearer {
-			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
+			err := fmt.Errorf("未支持的authorization类型 %s", authorizationType)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}

@@ -11,16 +11,23 @@ WHERE NOT EXISTS (
 )
 RETURNING *;
 
--- 分页查询用户当前有效预约
--- name: ListUserActiveReservation :many
-SELECT r.*, s.number as seat_number, rm.name as room_name
-FROM reservation r
-JOIN seat s ON r.seat_id = s.id
-JOIN room rm ON s.room_id = rm.id
-WHERE r.user_id = $1
-AND r.status IN ('reserved', 'checked_in')
-ORDER BY start_time DESC
-LIMIT $2 OFFSET $3;
+-- name: GetReservation :one
+SELECT * FROM reservation WHERE id = $1;
+
+-- 通用查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
+-- name: ListReservation :many
+SELECT * FROM reservation 
+WHERE
+  (sqlc.narg(start_time)::TIMESTAMP IS NULL OR start_time >= sqlc.narg(start_time)) AND
+  (sqlc.narg(end_time)::TIMESTAMP IS NULL OR end_time <= sqlc.narg(end_time)) AND
+  (sqlc.narg(user_id)::INT IS NULL OR user_id = sqlc.narg(user_id)) AND
+  (sqlc.narg(seat_id)::INT IS NULL OR seat_id = sqlc.narg(seat_id)) AND
+  (sqlc.narg(status)::VARCHAR(20) IS NULL OR status = sqlc.narg(status))
+ORDER BY
+  CASE WHEN sqlc.narg(sort_by) = 'start_time' THEN start_time END DESC,
+  created_at DESC
+LIMIT $1 OFFSET $2;
+
 
 -- 更新预约状态（含自动签到时间）
 -- name: UpdateReservationStatus :one

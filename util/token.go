@@ -20,9 +20,14 @@ type Maker interface {
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	Username  string    `json:"username"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
+
+	UserID         int32  `json:"user_id"`
+	Username       string `json:"username"`
+	UserDepartment string `json:"user_department"`
+	UserRole       string `json:"user_role"`
+	UserEmail      string `json:"user_email"`
 }
 
 func NewPayload(username string, duration time.Duration) (*Payload, error) {

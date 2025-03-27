@@ -6,11 +6,14 @@ RETURNING *;
 -- name: GetRoom :one
 SELECT * FROM room WHERE id = $1 LIMIT 1;
 
+-- department,is_active作为可能查询条件
 -- name: ListRoom :many
-SELECT * FROM room ORDER BY id LIMIT $1 OFFSET $2;
+SELECT * FROM room 
+WHERE
+  (sqlc.narg(department)::VARCHAR(50) IS NULL OR department = sqlc.narg(department)) AND
+  (sqlc.narg(is_active)::BOOLEAN IS NULL OR is_active = sqlc.narg(is_active))
+ORDER BY id DESC;
 
--- name: ListActiveRoom :many
-SELECT * FROM room WHERE is_active = TRUE ORDER BY id LIMIT $1 OFFSET $2;
 
 -- name: UpdateRoom :one
 UPDATE room SET

@@ -8,31 +8,23 @@ import (
 
 type Store interface {
 	Querier
-	//
 }
 
-// SQLStore provide all functions to execute SQL queries and transactons
+// SQLStore提供了执行SQL查询和事务的所有函数
 type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
+// 返回一个新的Store对象
 func NewStore(db *sql.DB) Store {
 	return &SQLStore{
-		db:      db,
 		Queries: New(db),
+		db:      db,
 	}
 }
 
-// NewStore create a new Store
-func NewStore(db *sql.DB) Store {
-	return &SQLStore{
-		db:      db,
-		Queries: New(db),
-	}
-}
-
-// execTx 执行一个函数，这个函数会传入一个Queries对象，这个Queries对象可以执行数据库操作
+// execTx 执行一个函数，这个函数会传入一个Queries对象执行数据库操作
 func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := store.db.BeginTx(ctx, nil)
 	if err != nil {

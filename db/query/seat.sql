@@ -3,11 +3,11 @@ INSERT INTO seat (room_id, number, has_socket, is_available)
 VALUES ($1, $2, COALESCE($3, FALSE), COALESCE($4, TRUE))
 RETURNING *;
 
---name: GetSeat :one
+-- name: GetSeat :one
 SELECT * FROM seat
 WHERE id = $1 LIMIT 1;
 
---name: UpdateSeat :one
+-- name: UpdateSeat :one
 UPDATE seat SET
     number = COALESCE(sqlc.narg(number), number),
     has_socket = COALESCE(sqlc.narg(has_socket), has_socket),
@@ -15,7 +15,7 @@ UPDATE seat SET
 WHERE id = $1
 RETURNING *;
 
---name: DeleteSeat :exec
+-- name: DeleteSeat :exec
 DELETE FROM seat
 WHERE id = $1;
 
