@@ -52,7 +52,7 @@ type Querier interface {
 	// department,is_active作为可能查询条件
 	ListRoom(ctx context.Context, arg ListRoomParams) ([]Room, error)
 	// 动态查询座位，可能参数room_id, has_socket, is_available
-	ListRoomSeat(ctx context.Context, arg ListRoomSeatParams) ([]Seat, error)
+	ListSeat(ctx context.Context, arg ListSeatParams) ([]Seat, error)
 	// 动态查询，可能参数role, department
 	ListUser(ctx context.Context, arg ListUserParams) ([]User, error)
 	// 动态查询，可能参数reservation_id, user_id

@@ -53,11 +53,11 @@ func (server *Server) setupRouter() {
 	authV1Router.DELETE("/reservation/:id", server.deleteReservation) // 取消预约
 	authV1Router.POST("/reservation/:id/checkin", server.checkIn)     // 签到
 	// 用户
-	authV1Router.GET("/me", server.getMe)                         // 获取用户信息
-	authV1Router.PUT("/me", server.updateMe)                      // 更新用户信息
-	authV1Router.GET("/me/reservation", server.listReservation)   // 获取预约列表
-	authV1Router.GET("/me/violation", server.listUserViolation)   // 获取我的违规记录
-	authV1Router.PUT("/me/violation/:id", server.updateViolation) // 更新违约记录，填写理由
+	authV1Router.GET("/me", server.getMe)                           // 获取用户信息
+	authV1Router.PATCH("/me", server.updateMe)                      // 更新用户信息
+	authV1Router.GET("/me/reservation", server.listReservation)     // 获取预约列表
+	authV1Router.GET("/me/violation", server.listUserViolation)     // 获取我的违规记录
+	authV1Router.PATCH("/me/violation/:id", server.updateViolation) // 更新违约记录，填写理由
 
 	// ==管理端==
 	adminRouter := router.Group("/admin").Use(adminMiddleware(server.tokenMaker))
@@ -65,12 +65,12 @@ func (server *Server) setupRouter() {
 	adminRouter.GET("/room", server.listRoom)          // 获取自习室列表
 	adminRouter.POST("/room", server.createRoom)       // 创建自习室
 	adminRouter.GET("/room/:id", server.getRoom)       // 获取自习室详情
-	adminRouter.PUT("/room/:id", server.updateRoom)    // 更新自习室
+	adminRouter.PATCH("/room/:id", server.updateRoom)  // 更新自习室
 	adminRouter.DELETE("/room/:id", server.deleteRoom) // 删除自习室
 	// 座位
 	adminRouter.GET("/seat", server.listSeat)          // 获取座位列表
 	adminRouter.POST("/seat", server.createSeat)       // 创建座位
-	adminRouter.PUT("/seat/:id", server.updateSeat)    // 更新座位
+	adminRouter.PATCH("/seat/:id", server.updateSeat)  // 更新座位
 	adminRouter.DELETE("/seat/:id", server.deleteSeat) // 删除座位
 	// 预约
 	adminRouter.GET("/reservation", server.listReservation)    // 条件查询所有预约
@@ -78,7 +78,7 @@ func (server *Server) setupRouter() {
 	// 用户
 	adminRouter.GET("/user", server.listUser)          // 获取用户列表
 	adminRouter.GET("/user/:id", server.getUser)       // 获取用户详情
-	adminRouter.PUT("/user/:id", server.updateUser)    // 更新用户信息
+	adminRouter.PATCH("/user/:id", server.updateUser)  // 更新用户信息
 	adminRouter.DELETE("/user/:id", server.deleteUser) // 删除用户
 	// 违规记录
 	adminRouter.GET("/violation", server.listViolation)    // 获取违规记录

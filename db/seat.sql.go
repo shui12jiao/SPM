@@ -110,7 +110,7 @@ func (q *Queries) GetSeatWithRoom(ctx context.Context, id int32) (GetSeatWithRoo
 	return i, err
 }
 
-const listRoomSeat = `-- name: ListRoomSeat :many
+const listSeat = `-- name: ListSeat :many
 SELECT s.id, s.room_id, s.number, s.has_socket, s.is_available FROM seat s
 WHERE 
     ($3::INT IS NULL OR s.room_id = $3) AND
@@ -120,7 +120,7 @@ ORDER BY s.room_id, s.number
 LIMIT $1 OFFSET $2
 `
 
-type ListRoomSeatParams struct {
+type ListSeatParams struct {
 	Limit       int32         `json:"limit"`
 	Offset      int32         `json:"offset"`
 	RoomID      sql.NullInt32 `json:"room_id"`
@@ -129,8 +129,8 @@ type ListRoomSeatParams struct {
 }
 
 // 动态查询座位，可能参数room_id, has_socket, is_available
-func (q *Queries) ListRoomSeat(ctx context.Context, arg ListRoomSeatParams) ([]Seat, error) {
-	rows, err := q.db.QueryContext(ctx, listRoomSeat,
+func (q *Queries) ListSeat(ctx context.Context, arg ListSeatParams) ([]Seat, error) {
+	rows, err := q.db.QueryContext(ctx, listSeat,
 		arg.Limit,
 		arg.Offset,
 		arg.RoomID,

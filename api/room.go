@@ -38,11 +38,11 @@ func (server *Server) getRoom(ctx *gin.Context) {
 // listRoom 获取自习室列表
 
 type listRoomRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
+	Page     int32 `form:"page" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
 	// 可为空参数
-	Department *string `form:"department,omitempty"`
-	IsActive   *bool   `form:"is_active,omitempty"`
+	Department *string `form:"department" binding:"omitempty"`
+	IsActive   *bool   `form:"is_active" binding:"omitempty"`
 }
 
 func (server *Server) listRoom(ctx *gin.Context) {
@@ -54,9 +54,9 @@ func (server *Server) listRoom(ctx *gin.Context) {
 
 	arg := db.ListRoomParams{
 		Limit:      req.PageSize,
-		Offset:     (req.PageID - 1) * req.PageSize,
-		Department: db.ToNullString(req.Department),
-		IsActive:   db.ToNullBool(req.IsActive),
+		Offset:     (req.Page - 1) * req.PageSize,
+		Department: db.ToNull[sql.NullString](req.Department),
+		IsActive:   db.ToNull[sql.NullBool](req.IsActive),
 	}
 
 	rooms, err := server.store.ListRoom(ctx, arg)

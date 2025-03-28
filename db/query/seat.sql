@@ -10,7 +10,7 @@ SELECT * FROM seat
 WHERE id = $1 LIMIT 1;
 
 -- 动态查询座位，可能参数room_id, has_socket, is_available
--- name: ListRoomSeat :many
+-- name: ListSeat :many
 SELECT s.* FROM seat s
 WHERE 
     (sqlc.narg(room_id)::INT IS NULL OR s.room_id = sqlc.narg(room_id)) AND
