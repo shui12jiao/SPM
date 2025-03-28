@@ -24,6 +24,7 @@ type CreateUserParams struct {
 	Email      string `json:"email"`
 }
 
+// 插入用户数据到"user"表
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, createUser,
 		arg.Username,
@@ -50,6 +51,7 @@ DELETE FROM "user"
 WHERE id = $1
 `
 
+// 删除用户
 func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
@@ -60,6 +62,7 @@ SELECT id, username, password, role, department, email, created_at FROM "user"
 WHERE id = $1 LIMIT 1
 `
 
+// 获取用户信息（通过ID）
 func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
@@ -80,6 +83,7 @@ SELECT id, username, password, role, department, email, created_at FROM "user"
 WHERE username = $1 LIMIT 1
 `
 
+// 根据用户名获取用户信息
 func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUserByUsername, username)
 	var i User
@@ -97,16 +101,27 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 
 const listUser = `-- name: ListUser :many
 SELECT id, username, password, role, department, email, created_at FROM "user"
+WHERE
+    ($3::VARCHAR(10) IS NULL OR role = $3) AND
+    ($4::VARCHAR(50) IS NULL OR department = $4)
 ORDER BY id LIMIT $1 OFFSET $2
 `
 
 type ListUserParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit      int32          `json:"limit"`
+	Offset     int32          `json:"offset"`
+	Role       sql.NullString `json:"role"`
+	Department sql.NullString `json:"department"`
 }
 
+// 动态查询，可能参数role, department
 func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, listUser, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listUser,
+		arg.Limit,
+		arg.Offset,
+		arg.Role,
+		arg.Department,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +171,7 @@ type UpdateUserParams struct {
 	Email      sql.NullString `json:"email"`
 }
 
+// 更新用户信息
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,

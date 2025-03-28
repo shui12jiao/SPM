@@ -14,41 +14,58 @@ import (
 type Querier interface {
 	// 创建带时间冲突检测的预约
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
+	// 创建自习室
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
+	// 创建座位表
 	CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error)
+	// 插入用户数据到"user"表
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
 	CreateViolationWithCheck(ctx context.Context, arg CreateViolationWithCheckParams) (Violation, error)
+	// 删除自习室
+	DeleteRoom(ctx context.Context, id int32) error
+	// 删除座位
 	DeleteSeat(ctx context.Context, id int32) error
+	// 删除用户
 	DeleteUser(ctx context.Context, id int32) error
+	// 更新违约记录
+	DeleteViolation(ctx context.Context, arg DeleteViolationParams) (Violation, error)
 	// 参数化超时时间（分钟）
 	ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error)
 	GetReservation(ctx context.Context, id uuid.UUID) (Reservation, error)
+	// 获取自习室信息
 	GetRoom(ctx context.Context, id int32) (Room, error)
 	// 自习室实时使用统计（含插座统计）
 	GetRoomUtilization(ctx context.Context) ([]GetRoomUtilizationRow, error)
+	// 获取所有座位信息
 	GetSeat(ctx context.Context, id int32) (Seat, error)
 	// 获取座位详细信息（含自习室信息）
 	GetSeatWithRoom(ctx context.Context, id int32) (GetSeatWithRoomRow, error)
+	// 获取用户信息（通过ID）
 	GetUser(ctx context.Context, id int32) (User, error)
 	// 用户行为分析（含预约和违约统计）
 	GetUserBehaviorStats(ctx context.Context, id int32) (GetUserBehaviorStatsRow, error)
+	// 根据用户名获取用户信息
 	GetUserByUsername(ctx context.Context, username string) (User, error)
-	// 通用查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
+	// 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 	ListReservation(ctx context.Context, arg ListReservationParams) ([]Reservation, error)
 	// department,is_active作为可能查询条件
 	ListRoom(ctx context.Context, arg ListRoomParams) ([]Room, error)
-	// 获取自习室的座位列表
-	ListRoomSeat(ctx context.Context, roomID int32) ([]Seat, error)
+	// 动态查询座位，可能参数room_id, has_socket, is_available
+	ListRoomSeat(ctx context.Context, arg ListRoomSeatParams) ([]Seat, error)
+	// 动态查询，可能参数role, department
 	ListUser(ctx context.Context, arg ListUserParams) ([]User, error)
-	// 获取用户违约详情（含预约信息）
-	ListUserViolation(ctx context.Context, userID int32) ([]ListUserViolationRow, error)
+	// 动态查询，可能参数reservation_id, user_id
+	ListViolation(ctx context.Context, arg ListViolationParams) ([]Violation, error)
 	// 更新预约状态（含自动签到时间）
 	UpdateReservationStatus(ctx context.Context, arg UpdateReservationStatusParams) (Reservation, error)
+	// 更新自习室信息
 	UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error)
+	// 更新座位信息
 	UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error)
 	// 批量更新座位
 	UpdateSeats(ctx context.Context, arg UpdateSeatsParams) ([]Seat, error)
+	// 更新用户信息
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

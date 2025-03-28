@@ -14,7 +14,7 @@ RETURNING *;
 -- name: GetReservation :one
 SELECT * FROM reservation WHERE id = $1;
 
--- 通用查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
+-- 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 -- name: ListReservation :many
 SELECT * FROM reservation 
 WHERE

@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"time"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -41,45 +41,69 @@ func (q *Queries) CreateViolationWithCheck(ctx context.Context, arg CreateViolat
 	return i, err
 }
 
-const listUserViolation = `-- name: ListUserViolation :many
-SELECT v.id, v.user_id, v.reservation_id, v.reason, v.created_at, r.start_time, r.end_time, s.number as seat_number
-FROM violation v
-JOIN reservation r ON v.reservation_id = r.id
-JOIN seat s ON r.seat_id = s.id
-WHERE v.user_id = $1
-ORDER BY v.created_at DESC
+const deleteViolation = `-- name: DeleteViolation :one
+UPDATE violation SET
+    reason = COALESCE($2, reason)
+WHERE id = $1
+RETURNING id, user_id, reservation_id, reason, created_at
 `
 
-type ListUserViolationRow struct {
-	ID            int32     `json:"id"`
-	UserID        int32     `json:"user_id"`
-	ReservationID uuid.UUID `json:"reservation_id"`
-	Reason        string    `json:"reason"`
-	CreatedAt     time.Time `json:"created_at"`
-	StartTime     time.Time `json:"start_time"`
-	EndTime       time.Time `json:"end_time"`
-	SeatNumber    string    `json:"seat_number"`
+type DeleteViolationParams struct {
+	ID     int32          `json:"id"`
+	Reason sql.NullString `json:"reason"`
 }
 
-// 获取用户违约详情（含预约信息）
-func (q *Queries) ListUserViolation(ctx context.Context, userID int32) ([]ListUserViolationRow, error) {
-	rows, err := q.db.QueryContext(ctx, listUserViolation, userID)
+// 更新违约记录
+func (q *Queries) DeleteViolation(ctx context.Context, arg DeleteViolationParams) (Violation, error) {
+	row := q.db.QueryRowContext(ctx, deleteViolation, arg.ID, arg.Reason)
+	var i Violation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ReservationID,
+		&i.Reason,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listViolation = `-- name: ListViolation :many
+SELECT v.id, v.user_id, v.reservation_id, v.reason, v.created_at FROM violation v
+WHERE
+    ($3::UUID IS NULL OR v.reservation_id = $3) AND
+    ($4::INT IS NULL OR v.user_id = $4)
+ORDER BY v.created_at DESC
+LIMIT $1 OFFSET $2
+`
+
+type ListViolationParams struct {
+	Limit         int32         `json:"limit"`
+	Offset        int32         `json:"offset"`
+	ReservationID uuid.NullUUID `json:"reservation_id"`
+	UserID        sql.NullInt32 `json:"user_id"`
+}
+
+// 动态查询，可能参数reservation_id, user_id
+func (q *Queries) ListViolation(ctx context.Context, arg ListViolationParams) ([]Violation, error) {
+	rows, err := q.db.QueryContext(ctx, listViolation,
+		arg.Limit,
+		arg.Offset,
+		arg.ReservationID,
+		arg.UserID,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ListUserViolationRow{}
+	items := []Violation{}
 	for rows.Next() {
-		var i ListUserViolationRow
+		var i Violation
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
 			&i.ReservationID,
 			&i.Reason,
 			&i.CreatedAt,
-			&i.StartTime,
-			&i.EndTime,
-			&i.SeatNumber,
 		); err != nil {
 			return nil, err
 		}

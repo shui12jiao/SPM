@@ -7,11 +7,18 @@ WHERE id = $2
 AND user_id = $1
 RETURNING *;
 
--- 获取用户违约详情（含预约信息）
--- name: ListUserViolation :many
-SELECT v.*, r.start_time, r.end_time, s.number as seat_number
-FROM violation v
-JOIN reservation r ON v.reservation_id = r.id
-JOIN seat s ON r.seat_id = s.id
-WHERE v.user_id = $1
-ORDER BY v.created_at DESC;
+-- 动态查询，可能参数reservation_id, user_id
+-- name: ListViolation :many
+SELECT v.* FROM violation v
+WHERE
+    (sqlc.narg(reservation_id)::UUID IS NULL OR v.reservation_id = sqlc.narg(reservation_id)) AND
+    (sqlc.narg(user_id)::INT IS NULL OR v.user_id = sqlc.narg(user_id))
+ORDER BY v.created_at DESC
+LIMIT $1 OFFSET $2;
+
+-- 更新违约记录
+-- name: DeleteViolation :one
+UPDATE violation SET
+    reason = COALESCE(sqlc.narg(reason), reason)
+WHERE id = $1
+RETURNING *;

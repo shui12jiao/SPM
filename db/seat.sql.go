@@ -26,6 +26,7 @@ type CreateSeatParams struct {
 	Column4 interface{} `json:"column_4"`
 }
 
+// 创建座位表
 func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, createSeat,
 		arg.RoomID,
@@ -49,6 +50,7 @@ DELETE FROM seat
 WHERE id = $1
 `
 
+// 删除座位
 func (q *Queries) DeleteSeat(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteSeat, id)
 	return err
@@ -59,6 +61,7 @@ SELECT id, room_id, number, has_socket, is_available FROM seat
 WHERE id = $1 LIMIT 1
 `
 
+// 获取所有座位信息
 func (q *Queries) GetSeat(ctx context.Context, id int32) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, getSeat, id)
 	var i Seat
@@ -109,13 +112,31 @@ func (q *Queries) GetSeatWithRoom(ctx context.Context, id int32) (GetSeatWithRoo
 
 const listRoomSeat = `-- name: ListRoomSeat :many
 SELECT s.id, s.room_id, s.number, s.has_socket, s.is_available FROM seat s
-WHERE s.room_id = $1
-ORDER BY s.id
+WHERE 
+    ($3::INT IS NULL OR s.room_id = $3) AND
+    ($4::BOOLEAN IS NULL OR s.has_socket = $4) AND
+    ($5::BOOLEAN IS NULL OR s.is_available = $5)
+ORDER BY s.room_id, s.number
+LIMIT $1 OFFSET $2
 `
 
-// 获取自习室的座位列表
-func (q *Queries) ListRoomSeat(ctx context.Context, roomID int32) ([]Seat, error) {
-	rows, err := q.db.QueryContext(ctx, listRoomSeat, roomID)
+type ListRoomSeatParams struct {
+	Limit       int32         `json:"limit"`
+	Offset      int32         `json:"offset"`
+	RoomID      sql.NullInt32 `json:"room_id"`
+	HasSocket   sql.NullBool  `json:"has_socket"`
+	IsAvailable sql.NullBool  `json:"is_available"`
+}
+
+// 动态查询座位，可能参数room_id, has_socket, is_available
+func (q *Queries) ListRoomSeat(ctx context.Context, arg ListRoomSeatParams) ([]Seat, error) {
+	rows, err := q.db.QueryContext(ctx, listRoomSeat,
+		arg.Limit,
+		arg.Offset,
+		arg.RoomID,
+		arg.HasSocket,
+		arg.IsAvailable,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -159,6 +180,7 @@ type UpdateSeatParams struct {
 	IsAvailable sql.NullBool   `json:"is_available"`
 }
 
+// 更新座位信息
 func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, updateSeat,
 		arg.ID,

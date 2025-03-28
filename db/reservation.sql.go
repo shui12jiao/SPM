@@ -100,7 +100,7 @@ type ListReservationParams struct {
 	SortBy    interface{}    `json:"sort_by"`
 }
 
-// 通用查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
+// 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 func (q *Queries) ListReservation(ctx context.Context, arg ListReservationParams) ([]Reservation, error) {
 	rows, err := q.db.QueryContext(ctx, listReservation,
 		arg.Limit,

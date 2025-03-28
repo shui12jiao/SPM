@@ -26,6 +26,7 @@ type CreateRoomParams struct {
 	Column6    interface{} `json:"column_6"`
 }
 
+// 创建自习室
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, createRoom,
 		arg.Name,
@@ -48,10 +49,22 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 	return i, err
 }
 
+const deleteRoom = `-- name: DeleteRoom :exec
+DELETE FROM room
+WHERE id = $1
+`
+
+// 删除自习室
+func (q *Queries) DeleteRoom(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteRoom, id)
+	return err
+}
+
 const getRoom = `-- name: GetRoom :one
 SELECT id, name, department, open_time, close_time, qr_code, is_active FROM room WHERE id = $1 LIMIT 1
 `
 
+// 获取自习室信息
 func (q *Queries) GetRoom(ctx context.Context, id int32) (Room, error) {
 	row := q.db.QueryRowContext(ctx, getRoom, id)
 	var i Room
@@ -142,6 +155,7 @@ type UpdateRoomParams struct {
 	IsActive   sql.NullBool   `json:"is_active"`
 }
 
+// 更新自习室信息
 func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, updateRoom,
 		arg.ID,

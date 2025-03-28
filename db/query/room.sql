@@ -1,8 +1,10 @@
+-- 创建自习室
 -- name: CreateRoom :one
 INSERT INTO room (name, department, open_time, close_time, qr_code, is_active)
 VALUES ($1, $2, $3, $4, $5, COALESCE($6, TRUE))
 RETURNING *;
 
+-- 获取自习室信息
 -- name: GetRoom :one
 SELECT * FROM room WHERE id = $1 LIMIT 1;
 
@@ -15,7 +17,7 @@ WHERE
 ORDER BY id DESC
 LIMIT $1 OFFSET $2;
 
-
+-- 更新自习室信息
 -- name: UpdateRoom :one
 UPDATE room SET
     name = COALESCE(sqlc.narg(name), name),
@@ -26,3 +28,8 @@ UPDATE room SET
     is_active = COALESCE(sqlc.narg(is_active), is_active)
 WHERE id = $1
 RETURNING *;
+
+-- 删除自习室
+-- name: DeleteRoom :exec
+DELETE FROM room
+WHERE id = $1;
