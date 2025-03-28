@@ -42,13 +42,15 @@ func (server *Server) setupRouter() {
 
 	authV1Router := v1Router.Group("").Use(authMiddleware(server.tokenMaker))
 	// 自习室
-	authV1Router.GET("/room", server.listRoom)                 //获取自习室列表
-	authV1Router.GET("/room/:id", server.getRoom)              //获取自习室详情
-	authV1Router.GET("/room/:id/seat", server.listSeat)        //获取自习室座位列表
-	authV1Router.POST("/room/:id/reserve", server.reserveRoom) //预约自习室(包括取消预约)
+	authV1Router.GET("/room", server.listRoom)    //获取自习室列表
+	authV1Router.GET("/room/:id", server.getRoom) //获取自习室详情
+	// 座位
+	authV1Router.GET("/seat/:id", server.getSeat) //获取自习室座位列表
+	authV1Router.GET("/seat/:id", server.getSeat) //获取自习室座位列表
 	// 预约
-	authV1Router.GET("/reservation/:id", server.getReservation)   //获取预约详情
-	authV1Router.POST("/reservation/:id/checkin", server.checkIn) //签到
+	authV1Router.POST("/seat/:id/reservation", server.createReservation) //预约自习室(包括取消预约)
+	authV1Router.GET("/reservation/:id", server.getReservation)          //获取预约详情
+	authV1Router.POST("/reservation/:id/checkin", server.checkIn)        //签到
 	// 用户
 	authV1Router.GET("/me", server.getMe)                           //获取用户信息
 	authV1Router.PUT("/me", server.updateMe)                        //更新用户信息
