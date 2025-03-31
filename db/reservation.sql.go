@@ -155,9 +155,9 @@ func (q *Queries) ListReservation(ctx context.Context, arg ListReservationParams
 
 const updateReservationStatus = `-- name: UpdateReservationStatus :one
 UPDATE reservation SET
-    status = COALESCE($2, status),
+    status = $2,
     checkin_time = CASE 
-        WHEN $2 = 'checked_in' THEN CURRENT_TIMESTAMP
+        WHEN $2 = 'completed' THEN CURRENT_TIMESTAMP
         ELSE checkin_time 
     END
 WHERE id = $1

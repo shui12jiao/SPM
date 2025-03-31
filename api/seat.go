@@ -38,8 +38,7 @@ func (server *Server) getSeat(ctx *gin.Context) {
 // listSeat 获取座位列表
 // GET /seats?room_id=1&has_socket=true&is_available=true&page=1&page_size=10
 type listSeatRequest struct {
-	Page     int32 `form:"page" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
+	Pagination
 	// 可为空参数
 	RoomID      *int32 `form:"room_id" binding:"omitempty,min=1"`
 	HasSocket   *bool  `form:"has_socket" binding:"omitempty"`

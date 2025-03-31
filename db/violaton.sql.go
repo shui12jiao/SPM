@@ -41,32 +41,6 @@ func (q *Queries) CreateViolationWithCheck(ctx context.Context, arg CreateViolat
 	return i, err
 }
 
-const deleteViolation = `-- name: DeleteViolation :one
-UPDATE violation SET
-    reason = COALESCE($2, reason)
-WHERE id = $1
-RETURNING id, user_id, reservation_id, reason, created_at
-`
-
-type DeleteViolationParams struct {
-	ID     int32          `json:"id"`
-	Reason sql.NullString `json:"reason"`
-}
-
-// 更新违约记录
-func (q *Queries) DeleteViolation(ctx context.Context, arg DeleteViolationParams) (Violation, error) {
-	row := q.db.QueryRowContext(ctx, deleteViolation, arg.ID, arg.Reason)
-	var i Violation
-	err := row.Scan(
-		&i.ID,
-		&i.UserID,
-		&i.ReservationID,
-		&i.Reason,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const listViolation = `-- name: ListViolation :many
 SELECT v.id, v.user_id, v.reservation_id, v.reason, v.created_at FROM violation v
 WHERE
@@ -116,4 +90,30 @@ func (q *Queries) ListViolation(ctx context.Context, arg ListViolationParams) ([
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateViolation = `-- name: UpdateViolation :one
+UPDATE violation SET
+    reason = $2
+WHERE id = $1
+RETURNING id, user_id, reservation_id, reason, created_at
+`
+
+type UpdateViolationParams struct {
+	ID     int32  `json:"id"`
+	Reason string `json:"reason"`
+}
+
+// 更新违约记录
+func (q *Queries) UpdateViolation(ctx context.Context, arg UpdateViolationParams) (Violation, error) {
+	row := q.db.QueryRowContext(ctx, updateViolation, arg.ID, arg.Reason)
+	var i Violation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ReservationID,
+		&i.Reason,
+		&i.CreatedAt,
+	)
+	return i, err
 }

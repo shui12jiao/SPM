@@ -93,3 +93,60 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, rsp)
 }
+
+// getMe获取当前用户信息
+// GET /v1/me
+
+func (server *Server) getMe(ctx *gin.Context) {
+	id := getUserID(ctx)
+
+	// 通过ID获取用户
+	userInfo, err := server.store.GetUser(ctx, int32(id))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newUserResponseFromUser(userInfo))
+}
+
+// updateMe更新当前用户信息
+// 允许更新的字段：password，email
+// PATCH /v1/me
+type updateMeRequest struct {
+	Password string `json:"password" binding:"omitempty,password"`
+	Email    string `json:"email" binding:"omitempty,email"`
+}
+
+func (server *Server) updateMe(ctx *gin.Context) {
+	var req updateMeRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	id := getUserID(ctx)
+
+	arg := db.UpdateUserParams{
+		ID:       id,
+		Password: db.ToNull[sql.NullString](req.Password),
+		Email:    db.ToNull[sql.NullString](req.Email),
+	}
+
+	user, err := server.store.UpdateUser(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newUserResponseFromUser(user))
+}

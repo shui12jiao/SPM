@@ -3,7 +3,6 @@ package api
 import (
 	"database/sql"
 	"man/db"
-	"man/util"
 	"net/http"
 	"time"
 
@@ -77,6 +76,32 @@ func (server *Server) listReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seats)
 }
 
+// 获取我的预约列表
+// GET /me/reservation?page=1&page_size=10
+type listMyReservationRequest = Pagination
+
+func (server *Server) listMyReservation(ctx *gin.Context) {
+	var req listMyReservationRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.ListReservationParams{
+		UserID: db.ToNull[sql.NullInt32](getUserID(ctx)),
+		Limit:  req.PageSize,
+		Offset: (req.Page - 1) * req.PageSize,
+	}
+
+	reservations, err := server.store.ListReservation(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, reservations)
+}
+
 // 创建预约
 // POST /reservation
 
@@ -97,7 +122,7 @@ func (server *Server) createReservation(ctx *gin.Context) {
 		SeatID:    req.SeatID,
 		StartTime: req.StartTime,
 		EndTime:   req.EndTime,
-		UserID:    int32(ctx.MustGet(authorizationPayloadKey).(*util.Payload).UserID),
+		UserID:    getUserID(ctx),
 	}
 
 	reservation, err := server.store.CreateReservation(ctx, arg)

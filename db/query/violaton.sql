@@ -17,8 +17,9 @@ ORDER BY v.created_at DESC
 LIMIT $1 OFFSET $2;
 
 -- 更新违约记录
--- name: DeleteViolation :one
+-- name: UpdateViolation :one
 UPDATE violation SET
-    reason = COALESCE(sqlc.narg(reason), reason)
+    reason = $2
 WHERE id = $1
 RETURNING *;
+

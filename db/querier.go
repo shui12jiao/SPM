@@ -30,8 +30,6 @@ type Querier interface {
 	DeleteSeat(ctx context.Context, id int32) error
 	// 删除用户
 	DeleteUser(ctx context.Context, id int32) error
-	// 更新违约记录
-	DeleteViolation(ctx context.Context, arg DeleteViolationParams) (Violation, error)
 	// 参数化超时时间（分钟）
 	ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error)
 	GetReservation(ctx context.Context, id uuid.UUID) (Reservation, error)
@@ -69,6 +67,8 @@ type Querier interface {
 	UpdateSeats(ctx context.Context, arg UpdateSeatsParams) ([]Seat, error)
 	// 更新用户信息
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	// 更新违约记录
+	UpdateViolation(ctx context.Context, arg UpdateViolationParams) (Violation, error)
 }
 
 var _ Querier = (*Queries)(nil)

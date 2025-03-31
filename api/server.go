@@ -55,8 +55,8 @@ func (server *Server) setupRouter() {
 	// 用户
 	authV1Router.GET("/me", server.getMe)                           // 获取用户信息
 	authV1Router.PATCH("/me", server.updateMe)                      // 更新用户信息
-	authV1Router.GET("/me/reservation", server.listReservation)     // 获取预约列表
-	authV1Router.GET("/me/violation", server.listUserViolation)     // 获取我的违规记录
+	authV1Router.GET("/me/reservation", server.listMyReservation)   // 获我的预约列表
+	authV1Router.GET("/me/violation", server.listMyViolation)       // 获取我的违规记录
 	authV1Router.PATCH("/me/violation/:id", server.updateViolation) // 更新违约记录，填写理由
 
 	// ==管理端==
@@ -88,8 +88,4 @@ func (server *Server) setupRouter() {
 
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
-}
-
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
 }

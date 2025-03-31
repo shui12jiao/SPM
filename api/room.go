@@ -38,8 +38,7 @@ func (server *Server) getRoom(ctx *gin.Context) {
 // listRoom 获取自习室列表
 
 type listRoomRequest struct {
-	Page     int32 `form:"page" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
+	Pagination
 	// 可为空参数
 	Department *string `form:"department" binding:"omitempty"`
 	IsActive   *bool   `form:"is_active" binding:"omitempty"`
