@@ -55,6 +55,17 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 	return i, err
 }
 
+const deleteReservation = `-- name: DeleteReservation :exec
+DELETE FROM reservation 
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP
+`
+
+// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
+func (q *Queries) DeleteReservation(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx, deleteReservation, id)
+	return err
+}
+
 const getReservation = `-- name: GetReservation :one
 SELECT id, user_id, seat_id, start_time, end_time, status, checkin_time, created_at FROM reservation WHERE id = $1
 `

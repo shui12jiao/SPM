@@ -22,6 +22,8 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
 	CreateViolationWithCheck(ctx context.Context, arg CreateViolationWithCheckParams) (Violation, error)
+	// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
+	DeleteReservation(ctx context.Context, id uuid.UUID) error
 	// 删除自习室
 	DeleteRoom(ctx context.Context, id int32) error
 	// 删除座位

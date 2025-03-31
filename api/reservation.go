@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"man/db"
+	"man/util"
 	"net/http"
 	"time"
 
@@ -74,4 +75,94 @@ func (server *Server) listReservation(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, seats)
+}
+
+// 创建预约
+// POST /reservation
+
+type createReservationRequest struct {
+	SeatID    int32     `json:"seat_id" binding:"required,min=1"`
+	StartTime time.Time `json:"start_time" binding:"required"`
+	EndTime   time.Time `json:"end_time" binding:"required"`
+}
+
+func (server *Server) createReservation(ctx *gin.Context) {
+	var req createReservationRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.CreateReservationParams{
+		SeatID:    req.SeatID,
+		StartTime: req.StartTime,
+		EndTime:   req.EndTime,
+		UserID:    int32(ctx.MustGet(authorizationPayloadKey).(*util.Payload).UserID),
+	}
+
+	reservation, err := server.store.CreateReservation(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, reservation)
+}
+
+// 取消预约
+// DELETE /reservation/:id
+type deleteReservationRequest struct {
+	ID uuid.UUID `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) deleteReservation(ctx *gin.Context) {
+	var req deleteReservationRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	err := server.store.DeleteReservation(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, nil)
+}
+
+// TODO 二维码签到
+// 签到
+// POST /reservation/:id/checkin
+type checkInRequest struct {
+	ID uuid.UUID `uri:"id" binding:"required,min=1"`
+}
+
+func (server *Server) checkIn(ctx *gin.Context) {
+	var req checkInRequest
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.UpdateReservationStatusParams{
+		ID:     req.ID,
+		Status: db.ReservationStatusCompleted,
+	}
+
+	reservation, err := server.store.UpdateReservationStatus(ctx, arg)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, reservation)
 }

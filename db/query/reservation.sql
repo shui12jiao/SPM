@@ -32,11 +32,16 @@ LIMIT $1 OFFSET $2;
 -- 更新预约状态（含自动签到时间）
 -- name: UpdateReservationStatus :one
 UPDATE reservation SET
-    status = COALESCE($2, status),
+    status = $2,
     checkin_time = CASE 
-        WHEN $2 = 'checked_in' THEN CURRENT_TIMESTAMP
+        WHEN $2 = 'completed' THEN CURRENT_TIMESTAMP
         ELSE checkin_time 
     END
 WHERE id = $1
 RETURNING *;
+
+-- 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
+-- name: DeleteReservation :exec
+DELETE FROM reservation 
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP;
 
