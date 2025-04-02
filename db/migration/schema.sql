@@ -17,7 +17,7 @@ CREATE TABLE room (
     open_time TIME NOT NULL,
     close_time TIME NOT NULL,
     qr_code TEXT NOT NULL,  -- 每日更新的二维码路径
-    is_active BOOLEAN NOT NULL DEFAULT TRUE
+    is_active BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- 座位表

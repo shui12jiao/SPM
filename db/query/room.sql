@@ -1,7 +1,7 @@
 -- 创建自习室
 -- name: CreateRoom :one
-INSERT INTO room (name, department, open_time, close_time, qr_code, is_active)
-VALUES ($1, $2, $3, $4, $5, COALESCE($6, TRUE))
+INSERT INTO room (name, department, open_time, close_time, qr_code)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- 获取自习室信息

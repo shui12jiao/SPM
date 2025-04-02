@@ -12,18 +12,17 @@ import (
 )
 
 const createRoom = `-- name: CreateRoom :one
-INSERT INTO room (name, department, open_time, close_time, qr_code, is_active)
-VALUES ($1, $2, $3, $4, $5, COALESCE($6, TRUE))
+INSERT INTO room (name, department, open_time, close_time, qr_code)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING id, name, department, open_time, close_time, qr_code, is_active
 `
 
 type CreateRoomParams struct {
-	Name       string      `json:"name"`
-	Department string      `json:"department"`
-	OpenTime   time.Time   `json:"open_time"`
-	CloseTime  time.Time   `json:"close_time"`
-	QrCode     string      `json:"qr_code"`
-	Column6    interface{} `json:"column_6"`
+	Name       string    `json:"name"`
+	Department string    `json:"department"`
+	OpenTime   time.Time `json:"open_time"`
+	CloseTime  time.Time `json:"close_time"`
+	QrCode     string    `json:"qr_code"`
 }
 
 // 创建自习室
@@ -34,7 +33,6 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 		arg.OpenTime,
 		arg.CloseTime,
 		arg.QrCode,
-		arg.Column6,
 	)
 	var i Room
 	err := row.Scan(
