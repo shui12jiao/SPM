@@ -41,6 +41,25 @@ func (q *Queries) CreateViolationWithCheck(ctx context.Context, arg CreateViolat
 	return i, err
 }
 
+const getViolation = `-- name: GetViolation :one
+SELECT id, user_id, reservation_id, reason, created_at FROM violation 
+WHERE id = $1
+`
+
+// 获取违约记录
+func (q *Queries) GetViolation(ctx context.Context, id int32) (Violation, error) {
+	row := q.db.QueryRowContext(ctx, getViolation, id)
+	var i Violation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ReservationID,
+		&i.Reason,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listViolation = `-- name: ListViolation :many
 SELECT v.id, v.user_id, v.reservation_id, v.reason, v.created_at FROM violation v
 WHERE

@@ -50,6 +50,8 @@ type Querier interface {
 	GetUserBehaviorStats(ctx context.Context, id int32) (GetUserBehaviorStatsRow, error)
 	// 根据用户名获取用户信息
 	GetUserByUsername(ctx context.Context, username string) (User, error)
+	// 获取违约记录
+	GetViolation(ctx context.Context, id int32) (Violation, error)
 	// 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 	ListReservation(ctx context.Context, arg ListReservationParams) ([]Reservation, error)
 	// department,is_active作为可能查询条件

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"reflect"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Nullable interface {
-	sql.NullInt32 | sql.NullInt64 | sql.NullString | sql.NullBool | sql.NullTime
+	sql.NullInt32 | sql.NullInt64 | sql.NullString | sql.NullBool | sql.NullTime | uuid.NullUUID
 }
 
 func ToNull[T Nullable](value any) T {
@@ -29,6 +31,8 @@ func ToNull[T Nullable](value any) T {
 		return any(sql.NullBool{Bool: *v, Valid: true}).(T)
 	case *time.Time:
 		return any(sql.NullTime{Time: *v, Valid: true}).(T)
+	case *uuid.UUID:
+		return any(uuid.NullUUID{UUID: *v, Valid: true}).(T)
 	default:
 		panic(fmt.Sprintf("unsupported type: %T", value))
 	}

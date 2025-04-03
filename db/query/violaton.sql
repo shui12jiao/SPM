@@ -23,3 +23,7 @@ UPDATE violation SET
 WHERE id = $1
 RETURNING *;
 
+-- 获取违约记录
+-- name: GetViolation :one
+SELECT * FROM violation 
+WHERE id = $1;
