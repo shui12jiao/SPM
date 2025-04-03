@@ -2,11 +2,13 @@ package api
 
 import (
 	"man/util"
-	"time"
 
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator"
 )
+
+// binding 用于注册自定义验证器，只用来检查数据的合法性
+// 不包含复杂的业务逻辑验证
 
 var (
 	validPassword validator.Func = func(fieldLevel validator.FieldLevel) bool {
@@ -26,21 +28,11 @@ var (
 		}
 		return false
 	}
-
-	validateStartTime validator.Func = func(fieldLevel validator.FieldLevel) bool {
-		if startTime, ok := fieldLevel.Field().Interface().(time.Time); ok {
-			if err := util.ValidateStartTime(startTime); err == nil {
-				return true
-			}
-		}
-		return false
-	}
 )
 
 func registerValidation() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("password", validPassword)
 		v.RegisterValidation("email", validEmail)
-		v.RegisterValidation("start_time", validateStartTime)
 	}
 }

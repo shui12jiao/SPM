@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"man/db"
 	"net/http"
 	"time"
@@ -108,7 +109,7 @@ func (server *Server) listMyReservation(ctx *gin.Context) {
 
 type createReservationRequest struct {
 	SeatID    int32     `json:"seat_id" binding:"required,min=1"`
-	StartTime time.Time `json:"start_time" binding:"required,start_time"`
+	StartTime time.Time `json:"start_time" binding:"required"`
 	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
@@ -116,6 +117,27 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	var req createReservationRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	// 检查座位是否存在且可用
+	seat, err := server.store.GetSeat(ctx, req.SeatID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("座位不存在")))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if !seat.IsAvailable {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("座位不可用")))
+		return
+	}
+
+	// 检查开始时间是否在当前时间之前，且不超过最大提前时间
+	if req.StartTime.Before(time.Now()) || req.StartTime.After(time.Now().Add(server.config.MaxReservationAdvanceDuration)) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("开始时间必须在当前时间之后，并且不超过 %s", server.config.MaxReservationAdvanceDuration.String())))
 		return
 	}
 

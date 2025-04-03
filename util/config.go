@@ -22,8 +22,9 @@ type Config struct {
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 
-	MaxReservationDuration         time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`
-	CancellableReservationDuration time.Duration `mapstructure:"CANCELLABLE_RESERVATION_DURATION"`
+	MaxReservationDuration         time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`         // 预约的最大持续时间
+	MaxReservationAdvanceDuration  time.Duration `mapstructure:"MAX_RESERVATION_ADVANCE_DURATION"` // 预约的最大提前时间
+	CancellableReservationDuration time.Duration `mapstructure:"CANCELLABLE_RESERVATION_DURATION"` // 预约开始前的可取消时间
 
 	EmailSenderName     string `mapstructure:"EMAIL_SENDER_NAME"`
 	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDRESS"`
@@ -47,6 +48,7 @@ func LoadConfig() Config {
 		RefreshTokenDuration: parseDuration(MustGetEnvString("REFRESH_TOKEN_DURATION")),
 
 		MaxReservationDuration:         parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+		MaxReservationAdvanceDuration:  parseDuration(MustGetEnvString("MAX_RESERVATION_ADVANCE_DURATION")), // 预约的最大提前时间
 		CancellableReservationDuration: parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
 
 		EmailSenderName:     MustGetEnvString("EMAIL_SENDER_NAME"),

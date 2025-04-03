@@ -3,22 +3,12 @@ package util
 import (
 	"fmt"
 	"net/mail"
-	"time"
 )
 
 const (
 	StudentRole = "student"
 	AdminRole   = "admin"
 )
-
-// start_time
-func ValidateStartTime(value time.Time) error {
-	// 要求开始时间在当前时间之后
-	if value.Before(time.Now()) {
-		return fmt.Errorf("开始时间必须在当前时间之后")
-	}
-	return nil
-}
 
 // password
 func ValidatePassword(value string) error {
