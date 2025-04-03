@@ -178,3 +178,15 @@ func (server *Server) listRoom(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rooms)
 }
+
+// getRoomUsage 获取自习室实时使用情况
+
+func (server *Server) getRoomUsage(ctx *gin.Context) {
+	usage, err := server.store.GetRoomUsage(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, usage)
+}

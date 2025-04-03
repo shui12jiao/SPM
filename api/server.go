@@ -85,7 +85,8 @@ func (server *Server) setupRouter() {
 	// 违规记录
 	adminRouter.GET("/violation", server.listViolation)    // 获取违规记录
 	adminRouter.GET("/violation/:id", server.getViolation) // 获取违规详情
-
+	// 资源查看接口
+	adminRouter.GET("/room/usage", server.getRoomUsage) // 获取自习室实时使用情况
 }
 
 func (server *Server) Start(address string) error {

@@ -1,5 +1,5 @@
 -- 自习室实时使用统计（含插座统计）
--- name: GetRoomUtilization :many
+-- name: GetRoomUsage :many
 SELECT 
     r.id,
     r.name,
@@ -23,7 +23,8 @@ LEFT JOIN violation v ON u.id = v.user_id
 WHERE u.id = $1
 GROUP BY u.id;
 
--- 参数化超时时间（分钟）
+-- 预约超时处理，将超时未签到的预约标记为违约
+-- 参数为：超时时间（分钟）
 -- name: ExpireReservations :many
 WITH expired_data AS (
     SELECT 

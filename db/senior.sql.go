@@ -44,7 +44,8 @@ type ExpireReservationsRow struct {
 	Email         string    `json:"email"`
 }
 
-// 参数化超时时间（分钟）
+// 预约超时处理，将超时未签到的预约标记为违约
+// 参数为：超时时间（分钟）
 func (q *Queries) ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error) {
 	rows, err := q.db.QueryContext(ctx, expireReservations, dollar_1)
 	if err != nil {
@@ -68,7 +69,7 @@ func (q *Queries) ExpireReservations(ctx context.Context, dollar_1 sql.NullStrin
 	return items, nil
 }
 
-const getRoomUtilization = `-- name: GetRoomUtilization :many
+const getRoomUsage = `-- name: GetRoomUsage :many
 SELECT 
     r.id,
     r.name,
@@ -80,7 +81,7 @@ LEFT JOIN seat s ON r.id = s.room_id
 GROUP BY r.id, r.name
 `
 
-type GetRoomUtilizationRow struct {
+type GetRoomUsageRow struct {
 	ID             int32  `json:"id"`
 	Name           string `json:"name"`
 	AvailableSeats int64  `json:"available_seats"`
@@ -89,15 +90,15 @@ type GetRoomUtilizationRow struct {
 }
 
 // 自习室实时使用统计（含插座统计）
-func (q *Queries) GetRoomUtilization(ctx context.Context) ([]GetRoomUtilizationRow, error) {
-	rows, err := q.db.QueryContext(ctx, getRoomUtilization)
+func (q *Queries) GetRoomUsage(ctx context.Context) ([]GetRoomUsageRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRoomUsage)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetRoomUtilizationRow{}
+	items := []GetRoomUsageRow{}
 	for rows.Next() {
-		var i GetRoomUtilizationRow
+		var i GetRoomUsageRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

@@ -33,13 +33,14 @@ type Querier interface {
 	DeleteSeat(ctx context.Context, id int32) error
 	// 删除用户
 	DeleteUser(ctx context.Context, id int32) error
-	// 参数化超时时间（分钟）
+	// 预约超时处理，将超时未签到的预约标记为违约
+	// 参数为：超时时间（分钟）
 	ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error)
 	GetReservation(ctx context.Context, id uuid.UUID) (Reservation, error)
 	// 获取自习室信息
 	GetRoom(ctx context.Context, id int32) (Room, error)
 	// 自习室实时使用统计（含插座统计）
-	GetRoomUtilization(ctx context.Context) ([]GetRoomUtilizationRow, error)
+	GetRoomUsage(ctx context.Context) ([]GetRoomUsageRow, error)
 	// 获取所有座位信息
 	GetSeat(ctx context.Context, id int32) (Seat, error)
 	// 获取座位详细信息（含自习室信息）
