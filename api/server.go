@@ -72,6 +72,8 @@ func (server *Server) setupRouter() {
 	adminRouter.POST("/seat", server.createSeat)       // 创建座位
 	adminRouter.PATCH("/seat/:id", server.updateSeat)  // 更新座位
 	adminRouter.DELETE("/seat/:id", server.deleteSeat) // 删除座位
+	adminRouter.POST("/seats", server.createSeats)     // 批量创建座位
+	adminRouter.PATCH("/seats", server.updateSeats)    // 批量更新座位
 	// 预约
 	adminRouter.GET("/reservation", server.listReservation)    // 条件查询所有预约
 	adminRouter.GET("/reservation/:id", server.getReservation) // 获取预约详情

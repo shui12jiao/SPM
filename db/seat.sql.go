@@ -15,15 +15,15 @@ import (
 
 const createSeat = `-- name: CreateSeat :one
 INSERT INTO seat (room_id, number, has_socket, is_available)
-VALUES ($1, $2, COALESCE($3, FALSE), COALESCE($4, TRUE))
+VALUES ($1, $2, $3, $4)
 RETURNING id, room_id, number, has_socket, is_available
 `
 
 type CreateSeatParams struct {
-	RoomID  int32       `json:"room_id"`
-	Number  string      `json:"number"`
-	Column3 interface{} `json:"column_3"`
-	Column4 interface{} `json:"column_4"`
+	RoomID      int32  `json:"room_id"`
+	Number      string `json:"number"`
+	HasSocket   bool   `json:"has_socket"`
+	IsAvailable bool   `json:"is_available"`
 }
 
 // 创建座位表
@@ -31,8 +31,8 @@ func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, e
 	row := q.db.QueryRowContext(ctx, createSeat,
 		arg.RoomID,
 		arg.Number,
-		arg.Column3,
-		arg.Column4,
+		arg.HasSocket,
+		arg.IsAvailable,
 	)
 	var i Seat
 	err := row.Scan(
@@ -43,6 +43,64 @@ func (q *Queries) CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, e
 		&i.IsAvailable,
 	)
 	return i, err
+}
+
+const createSeats = `-- name: CreateSeats :many
+INSERT INTO seat (room_id, number, has_socket, is_available)
+SELECT 
+    $1, 
+    data.number, 
+    data.has_socket, 
+    data.is_available
+FROM (
+    SELECT 
+        unnest($2::text[]) AS number,
+        unnest($3::boolean[]) AS has_socket,
+        unnest($4::boolean[]) AS is_available
+) AS data
+RETURNING id, room_id, number, has_socket, is_available
+`
+
+type CreateSeatsParams struct {
+	RoomID       int32    `json:"room_id"`
+	Numbers      []string `json:"numbers"`
+	HasSockets   []bool   `json:"has_sockets"`
+	IsAvailables []bool   `json:"is_availables"`
+}
+
+// 创建座位表（批量插入）
+func (q *Queries) CreateSeats(ctx context.Context, arg CreateSeatsParams) ([]Seat, error) {
+	rows, err := q.db.QueryContext(ctx, createSeats,
+		arg.RoomID,
+		pq.Array(arg.Numbers),
+		pq.Array(arg.HasSockets),
+		pq.Array(arg.IsAvailables),
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Seat{}
+	for rows.Next() {
+		var i Seat
+		if err := rows.Scan(
+			&i.ID,
+			&i.RoomID,
+			&i.Number,
+			&i.HasSocket,
+			&i.IsAvailable,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const deleteSeat = `-- name: DeleteSeat :exec
@@ -181,6 +239,7 @@ type UpdateSeatParams struct {
 }
 
 // 更新座位信息
+// 主要用于用户预约座位时，更新座位的可用性
 func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error) {
 	row := q.db.QueryRowContext(ctx, updateSeat,
 		arg.ID,
@@ -200,22 +259,36 @@ func (q *Queries) UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, e
 }
 
 const updateSeats = `-- name: UpdateSeats :many
-UPDATE seat SET
-    has_socket = COALESCE($2, has_socket),
-    is_available = COALESCE($3, is_available)
-WHERE id IN (SELECT unnest FROM unnest($1::int[]))
-RETURNING id, room_id, number, has_socket, is_available
+UPDATE seat
+SET
+    number = data.number,
+    has_socket = data.has_socket,
+    is_available = data.is_available
+FROM (
+    SELECT unnest($1::int[]) AS id,
+           unnest($2::text[]) AS number,
+           unnest($3::boolean[]) AS has_socket,
+           unnest($4::boolean[]) AS is_available
+) AS data
+WHERE seat.id = data.id
+RETURNING seat.id, seat.room_id, seat.number, seat.has_socket, seat.is_available
 `
 
 type UpdateSeatsParams struct {
-	Column1     []int32      `json:"column_1"`
-	HasSocket   sql.NullBool `json:"has_socket"`
-	IsAvailable sql.NullBool `json:"is_available"`
+	Ids          []int32  `json:"ids"`
+	Numbers      []string `json:"numbers"`
+	HasSockets   []bool   `json:"has_sockets"`
+	IsAvailables []bool   `json:"is_availables"`
 }
 
-// 批量更新座位
+// 批量更新座位, 不允许更改room_id
 func (q *Queries) UpdateSeats(ctx context.Context, arg UpdateSeatsParams) ([]Seat, error) {
-	rows, err := q.db.QueryContext(ctx, updateSeats, pq.Array(arg.Column1), arg.HasSocket, arg.IsAvailable)
+	rows, err := q.db.QueryContext(ctx, updateSeats,
+		pq.Array(arg.Ids),
+		pq.Array(arg.Numbers),
+		pq.Array(arg.HasSockets),
+		pq.Array(arg.IsAvailables),
+	)
 	if err != nil {
 		return nil, err
 	}

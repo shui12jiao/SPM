@@ -18,6 +18,8 @@ type Querier interface {
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	// 创建座位表
 	CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error)
+	// 创建座位表（批量插入）
+	CreateSeats(ctx context.Context, arg CreateSeatsParams) ([]Seat, error)
 	// 插入用户数据到"user"表
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
@@ -62,8 +64,9 @@ type Querier interface {
 	// 更新自习室信息
 	UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error)
 	// 更新座位信息
+	// 主要用于用户预约座位时，更新座位的可用性
 	UpdateSeat(ctx context.Context, arg UpdateSeatParams) (Seat, error)
-	// 批量更新座位
+	// 批量更新座位, 不允许更改room_id
 	UpdateSeats(ctx context.Context, arg UpdateSeatsParams) ([]Seat, error)
 	// 更新用户信息
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)

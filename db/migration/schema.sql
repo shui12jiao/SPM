@@ -17,7 +17,7 @@ CREATE TABLE room (
     open_time TIME NOT NULL,
     close_time TIME NOT NULL,
     qr_code TEXT NOT NULL,  -- 每日更新的二维码路径
-    is_active BOOLEAN NOT NULL DEFAULT FALSE
+    is_active BOOLEAN NOT NULL DEFAULT FALSE -- 默认新建自习室不启用
 );
 
 -- 座位表
@@ -25,8 +25,8 @@ CREATE TABLE seat (
     id SERIAL PRIMARY KEY,
     room_id INT REFERENCES room(id) NOT NULL,
     number VARCHAR(10) NOT NULL,
-    has_socket BOOLEAN NOT NULL DEFAULT FALSE,  -- 是否有插座
-    is_available BOOLEAN NOT NULL DEFAULT TRUE
+    has_socket BOOLEAN NOT NULL DEFAULT FALSE,  -- 是否有插座, 默认无插座
+    is_available BOOLEAN NOT NULL DEFAULT TRUE -- 默认新建座位可用
 );
 
 -- 预约记录表
