@@ -12,7 +12,8 @@ import (
 )
 
 type Querier interface {
-	// 创建带时间冲突检测的预约
+	// 创建预约
+	// 预约时间段内不能有其他预约，且座位必须可用
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
 	// 创建自习室
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)

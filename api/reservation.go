@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"man/db"
 	"net/http"
 	"time"
@@ -107,7 +108,7 @@ func (server *Server) listMyReservation(ctx *gin.Context) {
 
 type createReservationRequest struct {
 	SeatID    int32     `json:"seat_id" binding:"required,min=1"`
-	StartTime time.Time `json:"start_time" binding:"required"`
+	StartTime time.Time `json:"start_time" binding:"required,start_time"`
 	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
@@ -116,6 +117,10 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
+	}
+
+	if req.StartTime.After(req.EndTime) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("时间错误")))
 	}
 
 	arg := db.CreateReservationParams{

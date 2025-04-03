@@ -21,7 +21,11 @@ WHERE NOT EXISTS (
     WHERE seat_id = $2
     AND start_time < $4 
     AND end_time > $3
-    AND status NOT IN ('canceled', 'completed', 'violated')    
+    AND status IN ('reserved', 'completed')
+)
+AND EXISTS (
+    SELECT 1 FROM seat 
+    WHERE id = $2 AND is_available = TRUE
 )
 RETURNING id, user_id, seat_id, start_time, end_time, status, checkin_time, created_at
 `
@@ -33,7 +37,8 @@ type CreateReservationParams struct {
 	EndTime   time.Time `json:"end_time"`
 }
 
-// 创建带时间冲突检测的预约
+// 创建预约
+// 预约时间段内不能有其他预约，且座位必须可用
 func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error) {
 	row := q.db.QueryRowContext(ctx, createReservation,
 		arg.UserID,
