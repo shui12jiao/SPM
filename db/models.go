@@ -27,6 +27,7 @@ type Room struct {
 	Department string    `json:"department"`
 	OpenTime   time.Time `json:"open_time"`
 	CloseTime  time.Time `json:"close_time"`
+	Code       string    `json:"code"`
 	QrCode     string    `json:"qr_code"`
 	IsActive   bool      `json:"is_active"`
 }

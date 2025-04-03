@@ -16,7 +16,6 @@ type createRoomRequest struct {
 	Department string    `json:"department" binding:"required"`
 	OpenTime   time.Time `json:"open_time" binding:"required"`
 	CloseTime  time.Time `json:"close_time" binding:"required"`
-	QrCode     string    `json:"qr_code" binding:"required"`
 }
 
 func (server *Server) createRoom(ctx *gin.Context) {
@@ -31,7 +30,6 @@ func (server *Server) createRoom(ctx *gin.Context) {
 		Department: req.Department,
 		OpenTime:   req.OpenTime,
 		CloseTime:  req.CloseTime,
-		QrCode:     req.QrCode,
 	}
 
 	room, err := server.store.CreateRoom(ctx, arg)
@@ -79,7 +77,6 @@ type updateRoomRequest struct {
 	Department *string    `json:"department" binding:"omitempty"`
 	OpenTime   *time.Time `json:"open_time" binding:"omitempty"`
 	CloseTime  *time.Time `json:"close_time" binding:"omitempty"`
-	QrCode     *string    `json:"qr_code" binding:"omitempty"`
 	IsActive   *bool      `json:"is_active" binding:"omitempty"`
 }
 
@@ -102,7 +99,6 @@ func (server *Server) updateRoom(ctx *gin.Context) {
 		Department: db.ToNull[sql.NullString](req.Department),
 		OpenTime:   db.ToNull[sql.NullTime](req.OpenTime),
 		CloseTime:  db.ToNull[sql.NullTime](req.CloseTime),
-		QrCode:     db.ToNull[sql.NullString](req.QrCode),
 		IsActive:   db.ToNull[sql.NullBool](req.IsActive),
 	}
 

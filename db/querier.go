@@ -15,7 +15,7 @@ type Querier interface {
 	// 创建预约
 	// 预约时间段内不能有其他预约，且座位必须可用
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
-	// 创建自习室
+	// 创建自习室，不考虑二维码/签到码
 	CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error)
 	// 创建座位表
 	CreateSeat(ctx context.Context, arg CreateSeatParams) (Seat, error)
@@ -66,6 +66,7 @@ type Querier interface {
 	// 更新预约状态（含自动签到时间）
 	UpdateReservationStatus(ctx context.Context, arg UpdateReservationStatusParams) (Reservation, error)
 	// 更新自习室信息
+	// 签到码和二维码自动生成，无需更新
 	UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error)
 	// 更新座位信息
 	// 主要用于用户预约座位时，更新座位的可用性

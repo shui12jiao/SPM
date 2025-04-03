@@ -12,9 +12,9 @@ import (
 )
 
 const createRoom = `-- name: CreateRoom :one
-INSERT INTO room (name, department, open_time, close_time, qr_code)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, name, department, open_time, close_time, qr_code, is_active
+INSERT INTO room (name, department, open_time, close_time)
+VALUES ($1, $2, $3, $4)
+RETURNING id, name, department, open_time, close_time, code, qr_code, is_active
 `
 
 type CreateRoomParams struct {
@@ -22,17 +22,15 @@ type CreateRoomParams struct {
 	Department string    `json:"department"`
 	OpenTime   time.Time `json:"open_time"`
 	CloseTime  time.Time `json:"close_time"`
-	QrCode     string    `json:"qr_code"`
 }
 
-// 创建自习室
+// 创建自习室，不考虑二维码/签到码
 func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, createRoom,
 		arg.Name,
 		arg.Department,
 		arg.OpenTime,
 		arg.CloseTime,
-		arg.QrCode,
 	)
 	var i Room
 	err := row.Scan(
@@ -41,6 +39,7 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 		&i.Department,
 		&i.OpenTime,
 		&i.CloseTime,
+		&i.Code,
 		&i.QrCode,
 		&i.IsActive,
 	)
@@ -59,7 +58,7 @@ func (q *Queries) DeleteRoom(ctx context.Context, id int32) error {
 }
 
 const getRoom = `-- name: GetRoom :one
-SELECT id, name, department, open_time, close_time, qr_code, is_active FROM room WHERE id = $1 LIMIT 1
+SELECT id, name, department, open_time, close_time, code, qr_code, is_active FROM room WHERE id = $1 LIMIT 1
 `
 
 // 获取自习室信息
@@ -72,6 +71,7 @@ func (q *Queries) GetRoom(ctx context.Context, id int32) (Room, error) {
 		&i.Department,
 		&i.OpenTime,
 		&i.CloseTime,
+		&i.Code,
 		&i.QrCode,
 		&i.IsActive,
 	)
@@ -79,7 +79,7 @@ func (q *Queries) GetRoom(ctx context.Context, id int32) (Room, error) {
 }
 
 const listRoom = `-- name: ListRoom :many
-SELECT id, name, department, open_time, close_time, qr_code, is_active FROM room 
+SELECT id, name, department, open_time, close_time, code, qr_code, is_active FROM room 
 WHERE
   ($3::VARCHAR(50) IS NULL OR department = $3) AND
   ($4::BOOLEAN IS NULL OR is_active = $4)
@@ -115,6 +115,7 @@ func (q *Queries) ListRoom(ctx context.Context, arg ListRoomParams) ([]Room, err
 			&i.Department,
 			&i.OpenTime,
 			&i.CloseTime,
+			&i.Code,
 			&i.QrCode,
 			&i.IsActive,
 		); err != nil {
@@ -137,10 +138,11 @@ UPDATE room SET
     department = COALESCE($3, department),
     open_time = COALESCE($4, open_time),
     close_time = COALESCE($5, close_time),
-    qr_code = COALESCE($6, qr_code),
-    is_active = COALESCE($7, is_active)
+    -- qr_code = COALESCE(sqlc.narg(qr_code), qr_code),
+    -- code = COALESCE(sqlc.narg(code), code),
+    is_active = COALESCE($6, is_active)
 WHERE id = $1
-RETURNING id, name, department, open_time, close_time, qr_code, is_active
+RETURNING id, name, department, open_time, close_time, code, qr_code, is_active
 `
 
 type UpdateRoomParams struct {
@@ -149,11 +151,11 @@ type UpdateRoomParams struct {
 	Department sql.NullString `json:"department"`
 	OpenTime   sql.NullTime   `json:"open_time"`
 	CloseTime  sql.NullTime   `json:"close_time"`
-	QrCode     sql.NullString `json:"qr_code"`
 	IsActive   sql.NullBool   `json:"is_active"`
 }
 
 // 更新自习室信息
+// 签到码和二维码自动生成，无需更新
 func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, error) {
 	row := q.db.QueryRowContext(ctx, updateRoom,
 		arg.ID,
@@ -161,7 +163,6 @@ func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, e
 		arg.Department,
 		arg.OpenTime,
 		arg.CloseTime,
-		arg.QrCode,
 		arg.IsActive,
 	)
 	var i Room
@@ -171,6 +172,7 @@ func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, e
 		&i.Department,
 		&i.OpenTime,
 		&i.CloseTime,
+		&i.Code,
 		&i.QrCode,
 		&i.IsActive,
 	)

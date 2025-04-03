@@ -16,7 +16,8 @@ CREATE TABLE room (
     department VARCHAR(50) NOT NULL,  -- 所属院系
     open_time TIME NOT NULL,
     close_time TIME NOT NULL,
-    qr_code TEXT NOT NULL,  -- 每日更新的二维码路径
+    code TEXT NOT NULL DEFAULT '',
+    qr_code TEXT NOT NULL DEFAULT '',  -- 二维码签到 暂时不使用
     is_active BOOLEAN NOT NULL DEFAULT FALSE -- 默认新建自习室不启用
 );
 
