@@ -10,6 +10,14 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// 添加注释以描述 server 信息
+// @title           自习室管理系统 API
+// @version         1.0
+// @description     该系统用于管理自习室的预约、签到、退座等功能。
+// @termsOfService  http://swagger.io/terms/
+// @contact.name   API Support
+// @host      localhost:58888
+// @BasePath  /api/v1
 func main() {
 	// 加载配置文件
 	config := util.LoadConfig()

@@ -1,0 +1,11 @@
+basePath: /api/v1
+host: localhost:58888
+info:
+  contact:
+    name: API Support
+  description: 该系统用于管理自习室的预约、签到、退座等功能。
+  termsOfService: http://swagger.io/terms/
+  title: 自习室管理系统 API
+  version: "1.0"
+paths: {}
+swagger: "2.0"

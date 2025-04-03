@@ -1,0 +1,15 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "该系统用于管理自习室的预约、签到、退座等功能。",
+        "title": "自习室管理系统 API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:58888",
+    "basePath": "/api/v1",
+    "paths": {}
+}
