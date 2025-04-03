@@ -22,7 +22,8 @@ type Config struct {
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 
-	MaxReservationDuration time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`
+	MaxReservationDuration         time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`
+	CancellableReservationDuration time.Duration `mapstructure:"CANCELLABLE_RESERVATION_DURATION"`
 
 	EmailSenderName     string `mapstructure:"EMAIL_SENDER_NAME"`
 	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDRESS"`
@@ -45,7 +46,8 @@ func LoadConfig() Config {
 		AccessTokenDuration:  parseDuration(MustGetEnvString("ACCESS_TOKEN_DURATION")),
 		RefreshTokenDuration: parseDuration(MustGetEnvString("REFRESH_TOKEN_DURATION")),
 
-		MaxReservationDuration: parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+		MaxReservationDuration:         parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+		CancellableReservationDuration: parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
 
 		EmailSenderName:     MustGetEnvString("EMAIL_SENDER_NAME"),
 		EmailSenderAddress:  MustGetEnvString("EMAIL_SENDER_ADDRESS"),
