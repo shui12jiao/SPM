@@ -119,8 +119,9 @@ func (server *Server) createReservation(ctx *gin.Context) {
 		return
 	}
 
-	if req.StartTime.After(req.EndTime) {
-		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("时间错误")))
+	// 检查时间是否冲突, 保证预约时长大于0，且小于最大预约时长
+	if req.StartTime.After(req.EndTime) || req.EndTime.After(req.StartTime.Add(server.config.MaxReservationDuration)) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约时长错误")))
 	}
 
 	arg := db.CreateReservationParams{

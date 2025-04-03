@@ -10,36 +10,46 @@ import (
 )
 
 type Config struct {
-	Environment          string        `mapstructure:"ENVIRONMENT"`
-	DBDriver             string        `mapstructure:"DB_DRIVER"`
-	DBSource             string        `mapstructure:"DB_SOURCE"`
-	MigrationURL         string        `mapstructure:"MIGRATION_URL"`
-	RedisAddress         string        `mapstructure:"REDIS_ADDRESS"`
+	Environment string `mapstructure:"ENVIRONMENT"`
+
+	DBDriver     string `mapstructure:"DB_DRIVER"`
+	DBSource     string `mapstructure:"DB_SOURCE"`
+	MigrationURL string `mapstructure:"MIGRATION_URL"`
+	RedisAddress string `mapstructure:"REDIS_ADDRESS"`
+
 	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`
 	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
-	EmailSenderName      string        `mapstructure:"EMAIL_SENDER_NAME"`
-	EmailSenderAddress   string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
-	EmailSenderPassword  string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
+
+	MaxReservationDuration time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`
+
+	EmailSenderName     string `mapstructure:"EMAIL_SENDER_NAME"`
+	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDRESS"`
+	EmailSenderPassword string `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
 
 func LoadConfig() Config {
 	godotenv.Load()
 
 	return Config{
-		Environment:          MustGetEnvString("ENVIRONMENT"),
-		DBDriver:             MustGetEnvString("DB_DRIVER"),
-		DBSource:             MustGetEnvString("DB_SOURCE"),
-		MigrationURL:         MustGetEnvString("MIGRATION_URL"),
-		RedisAddress:         MustGetEnvString("REDIS_ADDRESS"),
+		Environment: MustGetEnvString("ENVIRONMENT"),
+
+		DBDriver:     MustGetEnvString("DB_DRIVER"),
+		DBSource:     MustGetEnvString("DB_SOURCE"),
+		MigrationURL: MustGetEnvString("MIGRATION_URL"),
+		RedisAddress: MustGetEnvString("REDIS_ADDRESS"),
+
 		HTTPServerAddress:    MustGetEnvString("HTTP_SERVER_ADDRESS"),
 		TokenSymmetricKey:    MustGetEnvString("TOKEN_SYMMETRIC_KEY"),
 		AccessTokenDuration:  parseDuration(MustGetEnvString("ACCESS_TOKEN_DURATION")),
 		RefreshTokenDuration: parseDuration(MustGetEnvString("REFRESH_TOKEN_DURATION")),
-		EmailSenderName:      MustGetEnvString("EMAIL_SENDER_NAME"),
-		EmailSenderAddress:   MustGetEnvString("EMAIL_SENDER_ADDRESS"),
-		EmailSenderPassword:  MustGetEnvString("EMAIL_SENDER_PASSWORD"),
+
+		MaxReservationDuration: parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+
+		EmailSenderName:     MustGetEnvString("EMAIL_SENDER_NAME"),
+		EmailSenderAddress:  MustGetEnvString("EMAIL_SENDER_ADDRESS"),
+		EmailSenderPassword: MustGetEnvString("EMAIL_SENDER_PASSWORD"),
 	}
 
 }
