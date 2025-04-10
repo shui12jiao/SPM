@@ -5,6 +5,9 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/rs/zerolog/log"
+
+	_ "github.com/golang-migrate/migrate/v4/database/postgres" // Import PostgreSQL database driver
+	_ "github.com/golang-migrate/migrate/v4/source/file"       // Import file source driver
 )
 
 func InitDB(dbr, dbd, migrationURL string) *sql.DB {
