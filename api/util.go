@@ -4,7 +4,12 @@ import (
 	"man/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog"
 )
+
+func getLogger(ctx *gin.Context) *zerolog.Logger {
+	return ctx.MustGet("logger").(*zerolog.Logger)
+}
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}

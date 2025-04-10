@@ -27,7 +27,6 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		config:     config,
 		store:      store,
 		tokenMaker: tokenMaker,
-		router:     gin.Default(),
 	}
 
 	registerValidation()
@@ -36,7 +35,20 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 }
 
 func (server *Server) setupRouter() {
-	router := server.router
+	// 设置gin的运行模式
+	if server.config.Environment == "production" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	router := gin.New()
+	router.Use(requestIDMiddleware(), loggerMiddleware(), gin.Recovery())
+
+	// ==for test==
+	router.GET("/panic", func(ctx *gin.Context) { panic("panic") })
+	router.GET("/info", func(ctx *gin.Context) {
+		getLogger(ctx).Info().Msg("测试消息")
+		ctx.JSON(200, gin.H{"info": "ok"})
+	})
 
 	// ==swag==
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
@@ -93,6 +105,8 @@ func (server *Server) setupRouter() {
 	adminRouter.GET("/violation/:id", server.getViolation) // 获取违规详情
 	// 资源查看接口
 	adminRouter.GET("/room/usage", server.getRoomUsage) // 获取自习室实时使用情况
+
+	server.router = router
 }
 
 func (server *Server) Start(address string) error {
