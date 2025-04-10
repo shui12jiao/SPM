@@ -4,9 +4,7 @@ import (
 	"man/api"
 	"man/db"
 	"man/util"
-	"os"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
@@ -23,9 +21,7 @@ func main() {
 	config := util.LoadConfig()
 
 	// 设置日志输出
-	if config.Environment == "development" {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
+	util.InitLogger(config.Environment)
 
 	// 初始化数据库, 执行迁移
 	conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)

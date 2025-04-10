@@ -16,6 +16,8 @@ const (
 	authorizationPayloadKey = "authorization_payload" // 用于存储解析后的token payload的key
 )
 
+// 检查用户是否登录的中间件
+// 该中间件会检查请求头中是否包含Authorization字段，并验证其有效性
 func authMiddleware(tokenMaker util.Maker) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader(authorizationHeaderKey)
