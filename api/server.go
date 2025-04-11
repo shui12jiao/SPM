@@ -29,36 +29,38 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 		tokenMaker: tokenMaker,
 	}
 
+	// 设置gin的运行模式
+	if server.config.Environment == util.EnvironmentProduction {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	registerValidation()
 	server.setupRouter()
 	return server, nil
 }
 
 func (server *Server) setupRouter() {
-	// 设置gin的运行模式
-	if server.config.Environment == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	}
-
 	router := gin.New()
 	router.Use(requestIDMiddleware(), loggerMiddleware(), gin.Recovery())
 
-	// ==for test==
-	router.GET("/panic", func(ctx *gin.Context) { panic("panic") })
-	router.GET("/info", func(ctx *gin.Context) {
-		getLogger(ctx).Info().Msg("测试消息")
-		ctx.JSON(200, gin.H{"info": "ok"})
-	})
-
-	// ==swag==
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// 仅在开发环境下使用的接口
+	if server.config.Environment == util.EnvironmentDevelopment {
+		// ==for test==
+		router.GET("/panic", func(ctx *gin.Context) { panic("panic") })
+		router.GET("/info", func(ctx *gin.Context) {
+			getLogger(ctx).Info().Msg("测试消息")
+			ctx.JSON(200, gin.H{"info": "ok"})
+		})
+		// ==swag==
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	// ==学生端==
 	v1Router := router.Group("/v1")
 	v1Router.POST("/login", server.loginUser)            // 用户登录
 	v1Router.POST("/refresh", server.refreshAccessToken) // 刷新 AccessToken
 
-	authV1Router := v1Router.Group("").Use(authMiddleware(server.tokenMaker))
+	authV1Router := v1Router.Group("").Use(authMiddleware(server.tokenMaker)) // 需要登录的路由
 	// 自习室
 	authV1Router.GET("/room", server.listRoom)    // 获取自习室列表
 	authV1Router.GET("/room/:id", server.getRoom) // 获取自习室详情
