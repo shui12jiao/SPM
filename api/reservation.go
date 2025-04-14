@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"man/db"
+	"man/task"
 	"net/http"
 	"time"
 
@@ -154,6 +155,20 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	}
 
 	reservation, err := server.store.CreateReservation(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	// 提交预约创建任务
+	err = server.scheduler.CreateReservationTasks(task.CreateReservationTaskArg{
+		ReservationID:        reservation.ID,
+		UserID:               reservation.UserID,
+		ReservationTime:      reservation.StartTime,
+		RemindBeforeDuration: server.config.ReservationRemindBeforeDuration,
+		RemindAfterDuration:  server.config.ReservationRemindAfterDuration,
+		ViolationDuration:    server.config.ReservationViolationDuration,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

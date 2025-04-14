@@ -10,6 +10,16 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"       // Import file source driver
 )
 
+const (
+	StudentRole = "student"
+	AdminRole   = "admin"
+
+	ReservationStatusReserved  = "reserved"
+	ReservationStatusCompleted = "completed"
+	ReservationStatusCanceled  = "canceled"
+	ReservationStatusViolated  = "violated"
+)
+
 func InitDB(dbr, dbd, migrationURL string) *sql.DB {
 	db, err := sql.Open(dbr, dbd)
 	if err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"man/api"
 	"man/db"
+	"man/task"
 	"man/util"
 
 	"github.com/rs/zerolog/log"
@@ -29,15 +30,16 @@ func main() {
 	// 创建存储
 	store := db.NewStore(conn)
 
-	// 运行服务
-	// TODO
+	// 初始化任务调度器
+	scheduler := task.NewScheduler(config, store)
+	scheduler.Start() // 非阻塞启动调度器
 
 	// HTTP服务器
-	runHTTPServer(config, store)
+	runHTTPServer(config, store, scheduler)
 }
 
-func runHTTPServer(config util.Config, store db.Store) {
-	server, err := api.NewServer(config, store)
+func runHTTPServer(config util.Config, store db.Store, scheduler task.Scheduler) {
+	server, err := api.NewServer(config, store, scheduler)
 	if err != nil {
 		log.Fatal().Err(err).Msg("无法创建服务器")
 		return

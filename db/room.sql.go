@@ -9,7 +9,24 @@ import (
 	"context"
 	"database/sql"
 	"time"
+
+	"github.com/lib/pq"
 )
+
+const countRoom = `-- name: CountRoom :one
+SELECT COUNT(*) FROM room
+WHERE
+  ($1::BOOLEAN IS NULL OR is_active = $1)
+`
+
+// 获取自习室数量
+// 可选参数：is_active
+func (q *Queries) CountRoom(ctx context.Context, isActive sql.NullBool) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countRoom, isActive)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
 
 const createRoom = `-- name: CreateRoom :one
 INSERT INTO room (name, department, open_time, close_time)
@@ -130,6 +147,16 @@ func (q *Queries) ListRoom(ctx context.Context, arg ListRoomParams) ([]Room, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateAllRoomCode = `-- name: UpdateAllRoomCode :exec
+UPDATE room SET code = unnest($1::text[])
+`
+
+// 更新所有自习室签到码
+func (q *Queries) UpdateAllRoomCode(ctx context.Context, codes []string) error {
+	_, err := q.db.ExecContext(ctx, updateAllRoomCode, pq.Array(codes))
+	return err
 }
 
 const updateRoom = `-- name: UpdateRoom :one

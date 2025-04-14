@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"man/db"
+	"man/task"
 	"man/util"
 
 	"github.com/gin-gonic/gin"
@@ -12,21 +13,24 @@ import (
 )
 
 type Server struct {
-	config     util.Config
-	store      db.Store
 	tokenMaker util.Maker
 	router     *gin.Engine
+
+	config    util.Config
+	store     db.Store
+	scheduler task.Scheduler
 }
 
-func NewServer(config util.Config, store db.Store) (*Server, error) {
+func NewServer(config util.Config, store db.Store, scheduler task.Scheduler) (*Server, error) {
 	tokenMaker, err := util.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("无法创建token maker: %w", err)
 	}
 	server := &Server{
+		tokenMaker: tokenMaker,
 		config:     config,
 		store:      store,
-		tokenMaker: tokenMaker,
+		scheduler:  scheduler,
 	}
 
 	// 设置gin的运行模式

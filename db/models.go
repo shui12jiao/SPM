@@ -55,5 +55,6 @@ type Violation struct {
 	UserID        int32     `json:"user_id"`
 	ReservationID uuid.UUID `json:"reservation_id"`
 	Reason        string    `json:"reason"`
+	Status        string    `json:"status"`
 	CreatedAt     time.Time `json:"created_at"`
 }

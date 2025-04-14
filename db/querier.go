@@ -12,6 +12,9 @@ import (
 )
 
 type Querier interface {
+	// 获取自习室数量
+	// 可选参数：is_active
+	CountRoom(ctx context.Context, isActive sql.NullBool) (int64, error)
 	// 创建预约
 	// 预约时间段内不能有其他预约，且座位必须可用
 	CreateReservation(ctx context.Context, arg CreateReservationParams) (Reservation, error)
@@ -24,7 +27,7 @@ type Querier interface {
 	// 插入用户数据到"user"表
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
-	CreateViolationWithCheck(ctx context.Context, arg CreateViolationWithCheckParams) (Violation, error)
+	CreateViolation(ctx context.Context, arg CreateViolationParams) (Violation, error)
 	// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
 	DeleteReservation(ctx context.Context, id uuid.UUID) error
 	// 删除自习室
@@ -63,6 +66,8 @@ type Querier interface {
 	ListUser(ctx context.Context, arg ListUserParams) ([]User, error)
 	// 动态查询，可能参数reservation_id, user_id
 	ListViolation(ctx context.Context, arg ListViolationParams) ([]Violation, error)
+	// 更新所有自习室签到码
+	UpdateAllRoomCode(ctx context.Context, codes []string) error
 	// 更新预约状态（含自动签到时间）
 	UpdateReservationStatus(ctx context.Context, arg UpdateReservationStatusParams) (Reservation, error)
 	// 更新自习室信息

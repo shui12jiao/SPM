@@ -5,11 +5,6 @@ import (
 	"net/mail"
 )
 
-const (
-	StudentRole = "student"
-	AdminRole   = "admin"
-)
-
 // password
 func ValidatePassword(value string) error {
 	if err := ValidateString(value, 6, 50); err != nil {

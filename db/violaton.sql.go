@@ -12,37 +12,34 @@ import (
 	"github.com/google/uuid"
 )
 
-const createViolationWithCheck = `-- name: CreateViolationWithCheck :one
-INSERT INTO violation (user_id, reservation_id, reason)
-SELECT $1, $2, $3
-FROM reservation 
-WHERE id = $2
-AND user_id = $1
-RETURNING id, user_id, reservation_id, reason, created_at
+const createViolation = `-- name: CreateViolation :one
+INSERT INTO violation (user_id, reservation_id)
+VALUES ($1, $2)
+RETURNING id, user_id, reservation_id, reason, status, created_at
 `
 
-type CreateViolationWithCheckParams struct {
+type CreateViolationParams struct {
 	UserID        int32     `json:"user_id"`
 	ReservationID uuid.UUID `json:"reservation_id"`
-	Reason        string    `json:"reason"`
 }
 
 // 创建关联预约的违约记录
-func (q *Queries) CreateViolationWithCheck(ctx context.Context, arg CreateViolationWithCheckParams) (Violation, error) {
-	row := q.db.QueryRowContext(ctx, createViolationWithCheck, arg.UserID, arg.ReservationID, arg.Reason)
+func (q *Queries) CreateViolation(ctx context.Context, arg CreateViolationParams) (Violation, error) {
+	row := q.db.QueryRowContext(ctx, createViolation, arg.UserID, arg.ReservationID)
 	var i Violation
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.ReservationID,
 		&i.Reason,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getViolation = `-- name: GetViolation :one
-SELECT id, user_id, reservation_id, reason, created_at FROM violation 
+SELECT id, user_id, reservation_id, reason, status, created_at FROM violation 
 WHERE id = $1
 `
 
@@ -55,13 +52,14 @@ func (q *Queries) GetViolation(ctx context.Context, id int32) (Violation, error)
 		&i.UserID,
 		&i.ReservationID,
 		&i.Reason,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listViolation = `-- name: ListViolation :many
-SELECT v.id, v.user_id, v.reservation_id, v.reason, v.created_at FROM violation v
+SELECT v.id, v.user_id, v.reservation_id, v.reason, v.status, v.created_at FROM violation v
 WHERE
     ($3::UUID IS NULL OR v.reservation_id = $3) AND
     ($4::INT IS NULL OR v.user_id = $4)
@@ -96,6 +94,7 @@ func (q *Queries) ListViolation(ctx context.Context, arg ListViolationParams) ([
 			&i.UserID,
 			&i.ReservationID,
 			&i.Reason,
+			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -115,7 +114,7 @@ const updateViolation = `-- name: UpdateViolation :one
 UPDATE violation SET
     reason = $2
 WHERE id = $1
-RETURNING id, user_id, reservation_id, reason, created_at
+RETURNING id, user_id, reservation_id, reason, status, created_at
 `
 
 type UpdateViolationParams struct {
@@ -132,6 +131,7 @@ func (q *Queries) UpdateViolation(ctx context.Context, arg UpdateViolationParams
 		&i.UserID,
 		&i.ReservationID,
 		&i.Reason,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err

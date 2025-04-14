@@ -49,7 +49,10 @@ CREATE TABLE violation (
     id SERIAL PRIMARY KEY,
     user_id INT REFERENCES "user"(id) NOT NULL,
     reservation_id UUID REFERENCES reservation(id) NOT NULL,
-    reason VARCHAR(200) NOT NULL,
+    reason VARCHAR(200) NOT NULL DEFAULT '未填写',
+    status VARCHAR(20) CHECK (
+        status IN ('unresolved', 'resolved')
+    ) NOT NULL DEFAULT 'unresolved',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -35,3 +35,15 @@ RETURNING *;
 -- name: DeleteRoom :exec
 DELETE FROM room
 WHERE id = $1;
+
+-- 获取自习室数量
+-- 可选参数：is_active
+-- name: CountRoom :one
+SELECT COUNT(*) FROM room
+WHERE
+  (sqlc.narg(is_active)::BOOLEAN IS NULL OR is_active = sqlc.narg(is_active));
+
+
+-- 更新所有自习室签到码
+-- name: UpdateAllRoomCode :exec
+UPDATE room SET code = unnest(@codes::text[]);

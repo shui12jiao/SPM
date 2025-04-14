@@ -1,10 +1,7 @@
 -- 创建关联预约的违约记录
--- name: CreateViolationWithCheck :one
-INSERT INTO violation (user_id, reservation_id, reason)
-SELECT $1, $2, $3
-FROM reservation 
-WHERE id = $2
-AND user_id = $1
+-- name: CreateViolation :one
+INSERT INTO violation (user_id, reservation_id)
+VALUES ($1, $2)
 RETURNING *;
 
 -- 动态查询，可能参数reservation_id, user_id
