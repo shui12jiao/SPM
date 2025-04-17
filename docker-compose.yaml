@@ -1,0 +1,29 @@
+# 注意没有使用volumes，数据会丢失
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: man
+    networks:
+      - management
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7077:7077"
+    depends_on:
+      - db
+    networks:
+      - management
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=production
+      - DB_SOURCE=postgresql://admin:admin@localhost:5432/man?sslmode=disable
+
+networks:
+  management:
+    driver: bridge
