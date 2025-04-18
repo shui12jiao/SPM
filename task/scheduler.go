@@ -30,15 +30,7 @@ func NewScheduler(config util.Config, store db.Store) Scheduler {
 	}
 
 	// 创建email sender
-	email := util.NewEmailSender(
-		util.EmailConfig{
-			SMTPHost:     "smtp.example.com",
-			SMTPPort:     587,
-			SenderEmail:  config.EmailSenderAddress,
-			SenderName:   config.EmailSenderName,
-			SMTPPassword: config.EmailSenderPassword,
-		},
-	)
+	email := util.NewEmailSender(config.EmailConfig)
 
 	s := &cronScheduler{
 		store:     store,

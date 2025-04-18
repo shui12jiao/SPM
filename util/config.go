@@ -2,6 +2,7 @@ package util
 
 import (
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -10,32 +11,33 @@ import (
 )
 
 type Config struct {
-	Environment string `mapstructure:"ENVIRONMENT"` // 环境变量，开发环境、生产环境
+	Environment string // 环境变量，开发环境、生产环境
 
-	DBDriver     string `mapstructure:"DB_DRIVER"`     // 数据库驱动
-	DBSource     string `mapstructure:"DB_SOURCE"`     // 数据库源
-	MigrationURL string `mapstructure:"MIGRATION_URL"` // 数据库迁移源
-	RedisAddress string `mapstructure:"REDIS_ADDRESS"` // Redis地址 暂时不使用
+	DBDriver     string // 数据库驱动
+	DBSource     string // 数据库源
+	MigrationURL string // 数据库迁移源
+	RedisAddress string // Redis地址 暂时不使用
 
-	HTTPServerAddress    string        `mapstructure:"HTTP_SERVER_ADDRESS"`    // HTTP服务器地址
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`    // 对称密钥
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`  // 访问令牌的有效期
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"` // 刷新令牌的有效期
+	HTTPServerAddress    string        // HTTP服务器地址
+	TokenSymmetricKey    string        // 对称密钥
+	AccessTokenDuration  time.Duration // 访问令牌的有效期
+	RefreshTokenDuration time.Duration // 刷新令牌的有效期
 
-	MaxReservationDuration          time.Duration `mapstructure:"MAX_RESERVATION_DURATION"`           // 预约的最大持续时间
-	MaxReservationAdvanceDuration   time.Duration `mapstructure:"MAX_RESERVATION_ADVANCE_DURATION"`   // 预约的最大提前时间
-	CancellableReservationDuration  time.Duration `mapstructure:"CANCELLABLE_RESERVATION_DURATION"`   // 预约开始前的可取消时间
-	ReservationRemindBeforeDuration time.Duration `mapstructure:"RESERVATION_REMIND_BEFORE_DURATION"` // 预约开始前的提醒时间
-	ReservationRemindAfterDuration  time.Duration `mapstructure:"RESERVATION_REMIND_AFTER_DURATION"`  // 预约开始后的提醒时间
-	ReservationViolationDuration    time.Duration `mapstructure:"RESERVATION_VIOLATION_DURATION"`     // 预约开始后的违约处理时间
+	MaxReservationDuration          time.Duration // 预约的最大持续时间
+	MaxReservationAdvanceDuration   time.Duration // 预约的最大提前时间
+	CancellableReservationDuration  time.Duration // 预约开始前的可取消时间
+	ReservationRemindBeforeDuration time.Duration // 预约开始前的提醒时间
+	ReservationRemindAfterDuration  time.Duration // 预约开始后的提醒时间
+	ReservationViolationDuration    time.Duration // 预约开始后的违约处理时间
 
-	EmailSenderName     string `mapstructure:"EMAIL_SENDER_NAME"`     // 邮件发送者名称
-	EmailSenderAddress  string `mapstructure:"EMAIL_SENDER_ADDRESS"`  // 邮件发送者地址
-	EmailSenderPassword string `mapstructure:"EMAIL_SENDER_PASSWORD"` // 邮件发送者密码
+	EmailConfig // 邮件配置
 }
 
 func LoadConfig() Config {
-	godotenv.Load()
+	// 读取环境变量配置文件
+	// 默认读取工作目录下的.env文件
+	// 也可以通过传入参数来指定其他文件
+	godotenv.Load("../.env")
 
 	return Config{
 		Environment: MustGetEnvString("ENVIRONMENT"),
@@ -57,11 +59,14 @@ func LoadConfig() Config {
 		ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
 		ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
 
-		EmailSenderName:     MustGetEnvString("EMAIL_SENDER_NAME"),
-		EmailSenderAddress:  MustGetEnvString("EMAIL_SENDER_ADDRESS"),
-		EmailSenderPassword: MustGetEnvString("EMAIL_SENDER_PASSWORD"),
+		EmailConfig: EmailConfig{
+			SenderName:   MustGetEnvString("EMAIL_SENDER_NAME"),
+			SenderEmail:  MustGetEnvString("EMAIL_SENDER_ADDRESS"),
+			SMTPPassword: MustGetEnvString("EMAIL_SENDER_PASSWORD"),
+			SMTPHost:     MustGetEnvString("EMAIL_SMTP_HOST"),
+			SMTPPort:     MustGetEnvInt("EMAIL_SMTP_PORT"),
+		},
 	}
-
 }
 
 func parseDuration(durationStr string) time.Duration {
@@ -79,4 +84,16 @@ func MustGetEnvString(key string) string {
 		log.Fatal().Msgf("环境变量 %s 为空", key)
 	}
 	return s
+}
+
+func MustGetEnvInt(key string) int {
+	s := os.Getenv(key)
+	if s == "" {
+		log.Fatal().Msgf("环境变量 %s 为空", key)
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("环境变量 %s 转换为整数失败", key)
+	}
+	return i
 }
