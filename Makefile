@@ -1,4 +1,6 @@
-.PHONY: postgres createdb dropdb sqlc swag
+.PHONY: postgres createdb dropdb sqlc swag test migrate migrateup migratedown
+
+DB_URL=postgres://admin:admin@localhost
 
 postgres:
 	docker run --name postgres --network host -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -d postgres:17-alpine
@@ -12,9 +14,18 @@ dropdb:
 migrate:
 	migrate create -ext sql -dir db/migration -seq $(name)
 
+migrateup:
+	migrate -path db/migration -database "$(DB_URL)" -verbose up
+
+migratedown:
+	migrate -path db/migration -database "$(DB_URL)" -verbose down
+
 sqlc:
 	sqlc generate
 
 swag:
 	swag init -g main.go --parseDependency --parseInternal --parseDepth 1
 	@echo "Swagger documentation generated in the docs directory."
+
+test:
+	go test -v -cover ./...
