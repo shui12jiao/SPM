@@ -60,7 +60,7 @@ func loggerMiddleware() gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 		method := c.Request.Method
 		clientIP := c.ClientIP()
-		errorMessage := c.Errors.ByType(gin.ErrorTypePrivate).String()
+		errorMessage := c.Errors.ByType(gin.ErrorTypePrivate).String() // TODO? logger在recovery之前, panic后无法获取到错误信息
 
 		ginLogger := logger.With().
 			Str("method", method).

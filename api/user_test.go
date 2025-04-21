@@ -82,13 +82,13 @@ func TestCreateUser(t *testing.T) {
 		},
 	}
 
-	// 测试用依赖
-	store := mockdb.NewMockStore(t)
-	server := newTestServer(t, store)
-	recorder := httptest.NewRecorder()
-
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// 依赖
+			store := mockdb.NewMockStore(t)
+			server := newTestServer(t, store)
+			recorder := httptest.NewRecorder()
+
 			// 构造存根
 			tc.stub(store)
 
