@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 )
 
 // db.User => api.userResponse 删去了Password字段
@@ -234,9 +235,16 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	// 哈希密码
+	hashedPassword, err := util.HashPassword(req.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	arg := db.CreateUserParams{
 		Username:   req.Username,
-		Password:   req.Password,
+		Password:   hashedPassword,
 		Role:       req.Role,
 		Department: req.Department,
 		Email:      req.Email,
@@ -244,6 +252,11 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	user, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
+		// 如果用户名已存在，返回409错误
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			ctx.JSON(http.StatusConflict, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

@@ -4,7 +4,7 @@ import (
 	"man/util"
 
 	"github.com/gin-gonic/gin/binding"
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 )
 
 // binding 用于注册自定义验证器，只用来检查数据的合法性
@@ -19,20 +19,11 @@ var (
 		}
 		return false
 	}
-
-	validEmail validator.Func = func(fieldLevel validator.FieldLevel) bool {
-		if email, ok := fieldLevel.Field().Interface().(string); ok {
-			if err := util.ValidateEmail(email); err == nil {
-				return true
-			}
-		}
-		return false
-	}
 )
 
 func registerValidation() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("password", validPassword)
-		v.RegisterValidation("email", validEmail)
+		// v.RegisterValidation("email", validEmail) // binding现在已经支持了email的验证
 	}
 }
