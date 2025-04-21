@@ -23,14 +23,20 @@ type Config struct {
 	AccessTokenDuration  time.Duration // 访问令牌的有效期
 	RefreshTokenDuration time.Duration // 刷新令牌的有效期
 
+	BusinessConfig // 业务相关配置
+
+	EmailConfig // 邮件配置
+}
+
+// 业务参数配置，可通过api修改
+type BusinessConfig struct {
+	// 预约相关配置
 	MaxReservationDuration          time.Duration // 预约的最大持续时间
 	MaxReservationAdvanceDuration   time.Duration // 预约的最大提前时间
 	CancellableReservationDuration  time.Duration // 预约开始前的可取消时间
 	ReservationRemindBeforeDuration time.Duration // 预约开始前的提醒时间
 	ReservationRemindAfterDuration  time.Duration // 预约开始后的提醒时间
 	ReservationViolationDuration    time.Duration // 预约开始后的违约处理时间
-
-	EmailConfig // 邮件配置
 }
 
 func LoadConfig() Config {
@@ -52,12 +58,14 @@ func LoadConfig() Config {
 		AccessTokenDuration:  parseDuration(MustGetEnvString("ACCESS_TOKEN_DURATION")),
 		RefreshTokenDuration: parseDuration(MustGetEnvString("REFRESH_TOKEN_DURATION")),
 
-		MaxReservationDuration:          parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
-		MaxReservationAdvanceDuration:   parseDuration(MustGetEnvString("MAX_RESERVATION_ADVANCE_DURATION")),
-		CancellableReservationDuration:  parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
-		ReservationRemindBeforeDuration: parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-		ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-		ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+		BusinessConfig: BusinessConfig{
+			MaxReservationDuration:          parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+			MaxReservationAdvanceDuration:   parseDuration(MustGetEnvString("MAX_RESERVATION_ADVANCE_DURATION")),
+			CancellableReservationDuration:  parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
+			ReservationRemindBeforeDuration: parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+			ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+			ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+		},
 
 		EmailConfig: EmailConfig{
 			SenderName:   MustGetEnvString("EMAIL_SENDER_NAME"),

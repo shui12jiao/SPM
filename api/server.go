@@ -111,6 +111,9 @@ func (server *Server) setupRouter() {
 	adminRouter.GET("/violation/:id", server.getViolation) // 获取违规详情
 	// 资源查看接口
 	adminRouter.GET("/room/usage", server.getRoomUsage) // 获取自习室实时使用情况
+	// config业务配置相关修改
+	adminRouter.GET("/config", server.getConfig)      // 获取配置
+	adminRouter.PATCH("/config", server.updateConfig) // 更新配置
 
 	server.router = router
 }
