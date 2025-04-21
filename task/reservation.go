@@ -85,7 +85,7 @@ func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) err
 			return s.email.SendEmail(
 				[]string{user.Email},
 				"自习室签到提醒",
-				fmt.Sprintf("你的自习室预约已于%s开始，请及时签到！超时%s分钟未签到将视为违约。",
+				fmt.Sprintf("你的自习室预约已于%s开始，请及时签到！超时%.0f分钟未签到将视为违约。",
 					arg.ReservationTime.Format(time.TimeOnly),
 					arg.ViolationDuration.Minutes(),
 				),
