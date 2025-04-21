@@ -149,7 +149,7 @@ func adminMiddleware(tokenMaker util.Maker) gin.HandlerFunc {
 		}
 
 		// 检查用户角色是否是管理员
-		if payload.UserRole != util.StudentRole {
+		if payload.UserRole != util.AdminRole {
 			err := errors.New("用户不是管理员")
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
