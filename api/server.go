@@ -34,8 +34,15 @@ func NewServer(config util.Config, store db.Store, scheduler task.Scheduler) (*S
 	}
 
 	// 设置gin的运行模式
-	if server.config.Environment == util.EnvironmentProduction {
-		gin.SetMode(gin.ReleaseMode)
+	switch config.Environment {
+	case util.EnvironmentDevelopment:
+		gin.SetMode(gin.DebugMode) // Debug模式
+	case util.EnvironmentProduction:
+		gin.SetMode(gin.ReleaseMode) // Release模式
+	case util.EnvironmentTest:
+		gin.SetMode(gin.TestMode) // Test模式
+	default:
+		gin.SetMode(gin.DebugMode) // 默认Debug模式
 	}
 
 	registerValidation()

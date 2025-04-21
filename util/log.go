@@ -12,6 +12,7 @@ const (
 	// 系统环境
 	EnvironmentProduction  = "production"  // 生产环境
 	EnvironmentDevelopment = "development" // 开发环境
+	EnvironmentTest        = "test"        // 测试环境 不手动指定 用于单元测试
 )
 
 func InitLogger(environment string) {

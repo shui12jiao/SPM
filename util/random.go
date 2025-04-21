@@ -27,6 +27,10 @@ func RandomNumber(n int) string {
 	return RandomRunes(n, numberRunes)
 }
 
+func RandomEmail() string {
+	return RandomRunes(6, letterRunes) + "@example.com"
+}
+
 // 生成指定字符集的随机字符串
 func RandomRunes(n int, charset []rune) string {
 	var sb strings.Builder
