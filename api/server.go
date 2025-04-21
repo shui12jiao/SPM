@@ -104,6 +104,7 @@ func (server *Server) setupRouter() {
 	// 用户
 	adminRouter.GET("/user", server.listUser)          // 获取用户列表
 	adminRouter.GET("/user/:id", server.getUser)       // 获取用户详情
+	adminRouter.POST("/user", server.createUser)       // 创建用户
 	adminRouter.PATCH("/user/:id", server.updateUser)  // 更新用户信息
 	adminRouter.DELETE("/user/:id", server.deleteUser) // 删除用户
 	// 违规记录

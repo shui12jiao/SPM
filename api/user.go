@@ -216,6 +216,41 @@ func (server *Server) getUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, newUserResponseFromUser(user))
 }
 
+// createUser创建用户信息
+// POST /admin/user
+
+type createUserRequest struct {
+	Username   string `json:"username" binding:"required"`
+	Password   string `json:"password" binding:"required,password"`
+	Role       string `json:"role" binding:"required"`
+	Department string `json:"department" binding:"required"`
+	Email      string `json:"email" binding:"required,email"`
+}
+
+func (server *Server) createUser(ctx *gin.Context) {
+	var req createUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	arg := db.CreateUserParams{
+		Username:   req.Username,
+		Password:   req.Password,
+		Role:       req.Role,
+		Department: req.Department,
+		Email:      req.Email,
+	}
+
+	user, err := server.store.CreateUser(ctx, arg)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, newUserResponseFromUser(user))
+}
+
 // updateUser更新用户信息
 // PATCH /admin/user/:id
 
