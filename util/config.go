@@ -39,11 +39,11 @@ type BusinessConfig struct {
 	ReservationViolationDuration    time.Duration // 预约开始后的违约处理时间
 }
 
-func LoadConfig() Config {
+func LoadConfig(path string) Config {
 	// 读取环境变量配置文件
 	// 默认读取工作目录下的.env文件
 	// 也可以通过传入参数来指定其他文件
-	godotenv.Load("../.env")
+	godotenv.Load(path)
 
 	return Config{
 		Environment: MustGetEnvString("ENVIRONMENT"),

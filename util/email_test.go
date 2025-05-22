@@ -12,7 +12,7 @@ func TestSendEmail(t *testing.T) {
 		t.Skip("short模式下跳过测试")
 	}
 
-	config := LoadConfig()
+	config := LoadConfig("../.env")
 
 	sender := NewEmailSender(config.EmailConfig)
 	subject := "测试邮件"
