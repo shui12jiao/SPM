@@ -1,4 +1,5 @@
 # 注意没有使用volumes，数据会丢失
+name: management
 services:
   db:
     image: postgres:17-alpine
@@ -8,6 +9,12 @@ services:
       POSTGRES_DB: man
     networks:
       - management
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d man"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
   app:
     build:
       context: .
@@ -15,14 +22,15 @@ services:
     ports:
       - "7077:7077"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - management
     env_file:
       - .env
     environment:
       - ENVIRONMENT=production
-      - DB_SOURCE=postgresql://admin:admin@localhost:5432/man?sslmode=disable
+      - DB_SOURCE=postgresql://admin:admin@db:5432/man?sslmode=disable
 
 networks:
   management:

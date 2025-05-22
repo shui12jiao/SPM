@@ -19,7 +19,7 @@ import (
 // @BasePath  /api/v1
 func main() {
 	// 加载配置文件
-	config := util.LoadConfig()
+	config := util.LoadConfig(".env")
 
 	// 设置日志输出
 	util.InitLogger(config.Environment)
