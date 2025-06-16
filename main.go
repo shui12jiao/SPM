@@ -26,11 +26,10 @@ func main() {
 	util.InitLogger(config.Environment)
 
 	// 初始化数据库, 执行迁移
-	// conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
+	conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
 
-	// // 创建存储
-	// store := db.NewStore(conn)
-	var store db.Store
+	// 创建存储
+	store := db.NewStore(conn)
 
 	// 初始化任务调度器
 	scheduler := task.NewScheduler(config, store)
