@@ -19,6 +19,20 @@ type getReservationRequest struct {
 	ID uuid.UUID `uri:"id" binding:"required,min=1"`
 }
 
+// getReservation 获取预约详情
+// @Summary 获取预约详情
+// @Description 根据预约 ID 获取预约信息
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param id path string true "预约ID"
+// @Success 200 {object} db.Reservation
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/reservation/{id} [get]
+// @Router /admin/reservation/{id} [get]
 func (server *Server) getReservation(ctx *gin.Context) {
 	var req getReservationRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -40,8 +54,6 @@ func (server *Server) getReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seat)
 }
 
-// listReservation 获取预约列表
-// GET /reservation?start_time=2025-03-01T00:00:00Z&end_time=2025-03-31T23:59:59Z&user_id=123&seat_id=456&status=confirmed&page=1&page_size=10
 type listReservationRequest struct {
 	Page     int32 `form:"page" binding:"required,min=1"`
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
@@ -53,6 +65,24 @@ type listReservationRequest struct {
 	Status    *string    `form:"status" binding:"omitempty"`
 }
 
+// listReservation 获取预约列表
+// @Summary 条件获取预约列表
+// @Description 支持按时间、用户、座位、状态过滤，并分页返回预约信息
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param start_time query string false "起始时间 (ISO8601)"
+// @Param end_time query string false "结束时间 (ISO8601)"
+// @Param user_id query int false "用户ID"
+// @Param seat_id query int false "座位ID"
+// @Param status query string false "预约状态"
+// @Param page query int true "页码，从1开始"
+// @Param page_size query int true "每页数量 (5–50)"
+// @Success 200 {array} db.Reservation
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/reservation [get]
 func (server *Server) listReservation(ctx *gin.Context) {
 	var req listReservationRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -79,10 +109,20 @@ func (server *Server) listReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seats)
 }
 
-// 获取我的预约列表
-// GET /me/reservation?page=1&page_size=10
 type listMyReservationRequest = Pagination
 
+// listMyReservation 获取当前用户的预约列表
+// @Summary 获取当前用户的预约记录（分页）
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param page query int true "页码，从1开始"
+// @Param page_size query int true "每页数量 (5–50)"
+// @Success 200 {array} db.Reservation
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/me/reservation [get]
 func (server *Server) listMyReservation(ctx *gin.Context) {
 	var req listMyReservationRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -105,15 +145,24 @@ func (server *Server) listMyReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, reservations)
 }
 
-// 创建预约
-// POST /reservation
-
 type createReservationRequest struct {
 	SeatID    int32     `json:"seat_id" binding:"required,min=1"`
 	StartTime time.Time `json:"start_time" binding:"required"`
 	EndTime   time.Time `json:"end_time" binding:"required"`
 }
 
+// createReservation 创建座位预约
+// @Summary 创建预约
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param data body createReservationRequest true "预约参数"
+// @Success 200 {object} db.Reservation
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/reservation [post]
 func (server *Server) createReservation(ctx *gin.Context) {
 	var req createReservationRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -177,12 +226,22 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, reservation)
 }
 
-// 取消预约
-// DELETE /reservation/:id
 type deleteReservationRequest struct {
 	ID uuid.UUID `uri:"id" binding:"required,min=1"`
 }
 
+// deleteReservation 取消预约
+// @Summary 取消指定预约
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param id path string true "预约ID"
+// @Success 200 {string} string "OK"
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/reservation/{id} [delete]
 func (server *Server) deleteReservation(ctx *gin.Context) {
 	var req deleteReservationRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -215,13 +274,22 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, nil)
 }
 
-// TODO 二维码签到
-// 签到
-// POST /reservation/:id/checkin
 type checkInRequest struct {
 	ID uuid.UUID `uri:"id" binding:"required,min=1"`
 }
 
+// checkIn 签到
+// @Summary 签到已预约座位
+// @Tags Reservation
+// @Accept json
+// @Produce json
+// @Param id path string true "预约ID"
+// @Success 200 {object} db.Reservation
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/reservation/{id}/checkin [post]
 func (server *Server) checkIn(ctx *gin.Context) {
 	var req checkInRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {

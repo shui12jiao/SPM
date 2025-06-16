@@ -47,6 +47,18 @@ type loginUserResponse struct {
 	User                  userResponse `json:"user"`
 }
 
+// loginUser 登录
+// @Summary 用户登录
+// @Description 使用用户名和密码登录，获取 access 和 refresh token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param data body loginUserRequest true "登录请求"
+// @Success 200 {object} loginUserResponse
+// @Failure 400
+// @Failure 401
+// @Failure 500
+// @Router /v1/login [post]
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -98,6 +110,16 @@ func (server *Server) loginUser(ctx *gin.Context) {
 // getMe获取当前用户信息
 // GET /v1/me
 
+// getMe 获取当前用户信息
+// @Summary 获取当前用户信息
+// @Description 获取登录用户的基本信息
+// @Tags User
+// @Produce json
+// @Success 200 {object} userResponse
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/me [get]
 func (server *Server) getMe(ctx *gin.Context) {
 	id := getUserID(ctx)
 
@@ -124,6 +146,19 @@ type updateMeRequest struct {
 	Email    string `json:"email" binding:"omitempty,email"`
 }
 
+// updateMe 更新当前用户信息
+// @Summary 更新当前用户信息
+// @Description 仅支持修改密码和邮箱
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param data body updateMeRequest true "更新内容"
+// @Success 200 {object} userResponse
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/me [patch]
 func (server *Server) updateMe(ctx *gin.Context) {
 	var req updateMeRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -161,6 +196,20 @@ type listUserRequest struct {
 	Department *string `form:"department" binding:"omitempty"`
 }
 
+// listUser 获取用户列表
+// @Summary 获取用户列表
+// @Description 支持分页和按角色/部门过滤
+// @Tags User
+// @Produce json
+// @Param page query int false "页码"
+// @Param page_size query int false "每页数量"
+// @Param role query string false "角色过滤"
+// @Param department query string false "部门过滤"
+// @Success 200 {array} userResponse
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /v1/user [get]
 func (server *Server) listUser(ctx *gin.Context) {
 	var req listUserRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -197,6 +246,18 @@ type getUserRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
 }
 
+// getUser 获取指定用户信息
+// @Summary 获取用户信息
+// @Description 管理员通过用户ID获取用户信息
+// @Tags User
+// @Produce json
+// @Param id path int true "用户ID"
+// @Success 200 {object} userResponse
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/user/{id} [get]
 func (server *Server) getUser(ctx *gin.Context) {
 	var req getUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -228,6 +289,19 @@ type createUserRequest struct {
 	Email      string `json:"email" binding:"required,email"`
 }
 
+// createUser 创建用户
+// @Summary 创建新用户
+// @Description 管理员创建用户账户
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param data body createUserRequest true "用户信息"
+// @Success 200 {object} userResponse
+// @Failure 400
+// @Failure 409
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/user [post]
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -276,6 +350,20 @@ type updateUserRequest struct {
 	Email      *string `json:"email" binding:"omitempty,email"`
 }
 
+// updateUser 更新用户信息
+// @Summary 更新用户
+// @Description 管理员更新指定用户信息
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param id path int true "用户ID"
+// @Param data body updateUserRequest true "更新内容"
+// @Success 200 {object} userResponse
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/user/{id} [patch]
 func (server *Server) updateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -316,6 +404,18 @@ type deleteUserRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
 }
 
+// deleteUser 删除用户
+// @Summary 删除用户
+// @Description 管理员删除指定用户
+// @Tags User
+// @Produce json
+// @Param id path int true "用户ID"
+// @Success 200 {object} nil
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/user/{id} [delete]
 func (server *Server) deleteUser(ctx *gin.Context) {
 	var req deleteUserRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {

@@ -3,6 +3,7 @@ package main
 import (
 	"man/api"
 	"man/db"
+	_ "man/docs"
 	"man/task"
 	"man/util"
 
@@ -15,7 +16,7 @@ import (
 // @description     该系统用于管理自习室的预约、签到、退座等功能。
 // @termsOfService  http://swagger.io/terms/
 // @contact.name   API Support
-// @host      localhost:8080
+// @host      localhost:7077
 // @BasePath  /api/v1
 func main() {
 	// 加载配置文件
@@ -25,10 +26,11 @@ func main() {
 	util.InitLogger(config.Environment)
 
 	// 初始化数据库, 执行迁移
-	conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
+	// conn := util.InitDB(config.DBDriver, config.DBSource, config.MigrationURL)
 
-	// 创建存储
-	store := db.NewStore(conn)
+	// // 创建存储
+	// store := db.NewStore(conn)
+	var store db.Store
 
 	// 初始化任务调度器
 	scheduler := task.NewScheduler(config, store)

@@ -18,6 +18,17 @@ type createSeatRequest struct {
 	IsAvailable bool   `json:"is_available"`
 }
 
+// createSeat 创建单个座位
+// @Summary 创建单个座位
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param data body createSeatRequest true "座位参数"
+// @Success 200 {object} db.Seat
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat [post]
 func (server *Server) createSeat(ctx *gin.Context) {
 	var req createSeatRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -40,12 +51,22 @@ func (server *Server) createSeat(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seat)
 }
 
-// 查询座位详情
-
 type getSeatRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
 }
 
+// getSeat 获取座位详情
+// @Summary 获取座位详情
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param id path int true "座位ID"
+// @Success 200 {object} db.Seat
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat/{id} [get]
 func (server *Server) getSeat(ctx *gin.Context) {
 	var req getSeatRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -67,8 +88,6 @@ func (server *Server) getSeat(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seat)
 }
 
-// listSeat 获取座位列表
-// GET /seats?room_id=1&has_socket=true&is_available=true&page=1&page_size=10
 type listSeatRequest struct {
 	Pagination
 	// 可为空参数
@@ -77,6 +96,21 @@ type listSeatRequest struct {
 	IsAvailable *bool  `form:"is_available" binding:"omitempty"`
 }
 
+// listSeat 获取座位列表
+// @Summary 获取座位列表（支持分页和条件过滤）
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param room_id query int false "自习室ID"
+// @Param has_socket query boolean false "是否有插座"
+// @Param is_available query boolean false "是否可用"
+// @Param page query int true "页码，从1开始"
+// @Param page_size query int true "每页数量"
+// @Success 200 {array} db.Seat
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat [get]
 func (server *Server) listSeat(ctx *gin.Context) {
 	var req listSeatRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -110,6 +144,18 @@ type updateSeatRequest struct {
 	IsAvailable *bool   `json:"is_available"`
 }
 
+// updateSeat 更新座位信息
+// @Summary 更新座位信息（不可更改RoomID）
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param id path int true "座位ID"
+// @Param data body updateSeatRequest true "可修改字段"
+// @Success 200 {object} db.Seat
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat/{id} [patch]
 func (server *Server) updateSeat(ctx *gin.Context) {
 	var req updateSeatRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -136,11 +182,22 @@ func (server *Server) updateSeat(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seat)
 }
 
-// 删除座位
 type deleteSeatRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
 }
 
+// deleteSeat 删除座位
+// @Summary 删除座位
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param id path int true "座位ID"
+// @Success 200 {string} string "OK"
+// @Failure 400
+// @Failure 404
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat/{id} [delete]
 func (server *Server) deleteSeat(ctx *gin.Context) {
 	var req deleteSeatRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -161,9 +218,6 @@ func (server *Server) deleteSeat(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, nil)
 }
 
-// 批量创建座位
-// 创建一个自习室的所有座位
-
 type createSeatsRequest struct {
 	RoomID int32 `json:"room_id" binding:"required,min=1"`
 	Seats  []struct {
@@ -173,6 +227,17 @@ type createSeatsRequest struct {
 	} `json:"seats" binding:"required,min=1"`
 }
 
+// createSeats 批量创建座位
+// @Summary 批量创建座位（用于初始化）
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param data body createSeatsRequest true "座位数组及所属自习室"
+// @Success 200 {array} db.Seat
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat/batch [post]
 func (server *Server) createSeats(ctx *gin.Context) {
 	var req createSeatsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -216,6 +281,17 @@ type updateSeatsRequest struct {
 	} `json:"seats" binding:"required,min=1"`
 }
 
+// updateSeats 批量更新座位
+// @Summary 批量更新座位信息（如状态/插座）
+// @Tags Seat
+// @Accept json
+// @Produce json
+// @Param data body updateSeatsRequest true "座位批量更新参数"
+// @Success 200 {array} db.Seat
+// @Failure 400
+// @Failure 500
+// @Security BearerAuth
+// @Router /admin/seat/batch [patch]
 func (server *Server) updateSeats(ctx *gin.Context) {
 	var req updateSeatsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
