@@ -428,20 +428,31 @@ func (_c *MockStore_CreateViolation_Call) RunAndReturn(run func(ctx context.Cont
 }
 
 // DeleteReservation provides a mock function for the type MockStore
-func (_mock *MockStore) DeleteReservation(ctx context.Context, id uuid.UUID) error {
+func (_mock *MockStore) DeleteReservation(ctx context.Context, id uuid.UUID) (sql.Result, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteReservation")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+	var r0 sql.Result
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (sql.Result, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) sql.Result); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(sql.Result)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockStore_DeleteReservation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteReservation'
@@ -463,12 +474,12 @@ func (_c *MockStore_DeleteReservation_Call) Run(run func(ctx context.Context, id
 	return _c
 }
 
-func (_c *MockStore_DeleteReservation_Call) Return(err error) *MockStore_DeleteReservation_Call {
-	_c.Call.Return(err)
+func (_c *MockStore_DeleteReservation_Call) Return(result sql.Result, err error) *MockStore_DeleteReservation_Call {
+	_c.Call.Return(result, err)
 	return _c
 }
 
-func (_c *MockStore_DeleteReservation_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *MockStore_DeleteReservation_Call {
+func (_c *MockStore_DeleteReservation_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (sql.Result, error)) *MockStore_DeleteReservation_Call {
 	_c.Call.Return(run)
 	return _c
 }

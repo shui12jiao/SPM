@@ -48,7 +48,7 @@ RETURNING *;
 
 
 -- 取消预约（只能取消未开始的预约）
--- name: CancelReservation :execresult
+-- name: DeleteReservation :execresult
 UPDATE reservation
 SET status = 'canceled'
 WHERE id = $1 AND start_time > CURRENT_TIMESTAMP AND status = 'reserved';

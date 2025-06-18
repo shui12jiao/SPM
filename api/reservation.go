@@ -283,13 +283,14 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 	}
 
 	// 检查是否可以取消预约
+	// query中已有检测逻辑，冗余
 	if time.Now().Add(server.config.CancellableReservationDuration).After(reservation.StartTime) {
 		// 如果当前时间已经超过预约开始前的可取消时间，则无法取消
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约已开始，无法取消")))
 		return
 	}
 
-	result, err := server.store.CancelReservation(ctx, id)
+	result, err := server.store.DeleteReservation(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
