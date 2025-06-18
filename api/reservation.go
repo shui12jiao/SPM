@@ -195,6 +195,7 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	}
 
 	// 检查座位是否存在且可用
+	// 实际数据库会更复杂的判断，包括时间冲突等，这里暂时保留，方便debug
 	seat, err := server.store.GetSeat(ctx, req.SeatID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -218,7 +219,13 @@ func (server *Server) createReservation(ctx *gin.Context) {
 
 	reservation, err := server.store.CreateReservation(ctx, arg)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		if errors.Is(err, sql.ErrNoRows) {
+			ctx.JSON(http.StatusBadRequest, gin.H{
+				"error": "预约失败：座位不可用或时间冲突",
+			})
+		} else {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		}
 		return
 	}
 
