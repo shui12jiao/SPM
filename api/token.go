@@ -16,6 +16,18 @@ type refreshAccessTokenResponse struct {
 	AccessTokenExpiresAt time.Time `json:"access_token_expires_at"`
 }
 
+// refreshAccessToken 刷新访问令牌
+// @Summary 刷新访问令牌
+// @Description 使用refresh token刷新access token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param data body refreshAccessTokenRequest true "Refresh Token Request"
+// @Success 200 {object} refreshAccessTokenResponse
+// @Failure 400
+// @Failure 401
+// @Failure 500
+// @Router /v1/refresh [post]
 func (server *Server) refreshAccessToken(ctx *gin.Context) {
 	var req refreshAccessTokenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

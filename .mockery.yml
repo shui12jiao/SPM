@@ -1,5 +1,5 @@
 all: false
-dir: db/mock
+dir: db/mockdb
 filename: mock.go
 force-file-write: true
 formatter: goimports

@@ -60,15 +60,15 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 	return i, err
 }
 
-const deleteReservation = `-- name: DeleteReservation :exec
-DELETE FROM reservation 
-WHERE id = $1 AND start_time > CURRENT_TIMESTAMP
+const deleteReservation = `-- name: DeleteReservation :execresult
+UPDATE reservation
+SET status = 'canceled'
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP AND status = 'reserved'
 `
 
-// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
-func (q *Queries) DeleteReservation(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteReservation, id)
-	return err
+// 取消预约（只能取消未开始的预约）
+func (q *Queries) DeleteReservation(ctx context.Context, id uuid.UUID) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteReservation, id)
 }
 
 const getReservation = `-- name: GetReservation :one
@@ -87,6 +87,46 @@ func (q *Queries) GetReservation(ctx context.Context, id uuid.UUID) (Reservation
 		&i.Status,
 		&i.CheckinTime,
 		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getReservationWithRoomCode = `-- name: GetReservationWithRoomCode :one
+SELECT
+    r.id, r.user_id, r.seat_id, r.start_time, r.end_time, r.status, r.checkin_time, r.created_at,
+    rm.code AS room_code
+FROM reservation r
+JOIN seat s ON r.seat_id = s.id
+JOIN room rm ON s.room_id = rm.id
+WHERE r.id = $1
+`
+
+type GetReservationWithRoomCodeRow struct {
+	ID          uuid.UUID         `json:"id"`
+	UserID      int32             `json:"user_id"`
+	SeatID      int32             `json:"seat_id"`
+	StartTime   time.Time         `json:"start_time"`
+	EndTime     time.Time         `json:"end_time"`
+	Status      ReservationStatus `json:"status"`
+	CheckinTime time.Time         `json:"checkin_time"`
+	CreatedAt   time.Time         `json:"created_at"`
+	RoomCode    string            `json:"room_code"`
+}
+
+// 获取预约信息时附带座位所在房间的代码，用于签到
+func (q *Queries) GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) (GetReservationWithRoomCodeRow, error) {
+	row := q.db.QueryRowContext(ctx, getReservationWithRoomCode, id)
+	var i GetReservationWithRoomCodeRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.SeatID,
+		&i.StartTime,
+		&i.EndTime,
+		&i.Status,
+		&i.CheckinTime,
+		&i.CreatedAt,
+		&i.RoomCode,
 	)
 	return i, err
 }
@@ -161,17 +201,14 @@ func (q *Queries) ListReservation(ctx context.Context, arg ListReservationParams
 const updateReservationStatus = `-- name: UpdateReservationStatus :one
 UPDATE reservation SET
     status = $2,
-    checkin_time = CASE 
-        WHEN $2 = 'completed' THEN CURRENT_TIMESTAMP
-        ELSE checkin_time 
-    END
+    checkin_time = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING id, user_id, seat_id, start_time, end_time, status, checkin_time, created_at
 `
 
 type UpdateReservationStatusParams struct {
-	ID     uuid.UUID `json:"id"`
-	Status string    `json:"status"`
+	ID     uuid.UUID         `json:"id"`
+	Status ReservationStatus `json:"status"`
 }
 
 // 更新预约状态（含自动签到时间）

@@ -29,14 +29,16 @@ func (q *Queries) CountRoom(ctx context.Context, isActive sql.NullBool) (int64, 
 }
 
 const createRoom = `-- name: CreateRoom :one
-INSERT INTO room (name, department, open_time, close_time)
-VALUES ($1, $2, $3, $4)
+INSERT INTO room (name, department, code, qr_code, open_time, close_time)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING id, name, department, open_time, close_time, code, qr_code, is_active
 `
 
 type CreateRoomParams struct {
 	Name       string    `json:"name"`
 	Department string    `json:"department"`
+	Code       string    `json:"code"`
+	QrCode     string    `json:"qr_code"`
 	OpenTime   time.Time `json:"open_time"`
 	CloseTime  time.Time `json:"close_time"`
 }
@@ -46,6 +48,8 @@ func (q *Queries) CreateRoom(ctx context.Context, arg CreateRoomParams) (Room, e
 	row := q.db.QueryRowContext(ctx, createRoom,
 		arg.Name,
 		arg.Department,
+		arg.Code,
+		arg.QrCode,
 		arg.OpenTime,
 		arg.CloseTime,
 	)
@@ -165,9 +169,9 @@ UPDATE room SET
     department = COALESCE($3, department),
     open_time = COALESCE($4, open_time),
     close_time = COALESCE($5, close_time),
-    -- qr_code = COALESCE(sqlc.narg(qr_code), qr_code),
-    -- code = COALESCE(sqlc.narg(code), code),
-    is_active = COALESCE($6, is_active)
+    qr_code = COALESCE($6, qr_code),
+    code = COALESCE($7, code),
+    is_active = COALESCE($8, is_active)
 WHERE id = $1
 RETURNING id, name, department, open_time, close_time, code, qr_code, is_active
 `
@@ -178,6 +182,8 @@ type UpdateRoomParams struct {
 	Department sql.NullString `json:"department"`
 	OpenTime   sql.NullTime   `json:"open_time"`
 	CloseTime  sql.NullTime   `json:"close_time"`
+	QrCode     sql.NullString `json:"qr_code"`
+	Code       sql.NullString `json:"code"`
 	IsActive   sql.NullBool   `json:"is_active"`
 }
 
@@ -190,6 +196,8 @@ func (q *Queries) UpdateRoom(ctx context.Context, arg UpdateRoomParams) (Room, e
 		arg.Department,
 		arg.OpenTime,
 		arg.CloseTime,
+		arg.QrCode,
+		arg.Code,
 		arg.IsActive,
 	)
 	var i Room

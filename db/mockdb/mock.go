@@ -428,20 +428,31 @@ func (_c *MockStore_CreateViolation_Call) RunAndReturn(run func(ctx context.Cont
 }
 
 // DeleteReservation provides a mock function for the type MockStore
-func (_mock *MockStore) DeleteReservation(ctx context.Context, id uuid.UUID) error {
+func (_mock *MockStore) DeleteReservation(ctx context.Context, id uuid.UUID) (sql.Result, error) {
 	ret := _mock.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DeleteReservation")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) error); ok {
+	var r0 sql.Result
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (sql.Result, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) sql.Result); ok {
 		r0 = returnFunc(ctx, id)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(sql.Result)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockStore_DeleteReservation_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'DeleteReservation'
@@ -463,12 +474,12 @@ func (_c *MockStore_DeleteReservation_Call) Run(run func(ctx context.Context, id
 	return _c
 }
 
-func (_c *MockStore_DeleteReservation_Call) Return(err error) *MockStore_DeleteReservation_Call {
-	_c.Call.Return(err)
+func (_c *MockStore_DeleteReservation_Call) Return(result sql.Result, err error) *MockStore_DeleteReservation_Call {
+	_c.Call.Return(result, err)
 	return _c
 }
 
-func (_c *MockStore_DeleteReservation_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) error) *MockStore_DeleteReservation_Call {
+func (_c *MockStore_DeleteReservation_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (sql.Result, error)) *MockStore_DeleteReservation_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -719,6 +730,61 @@ func (_c *MockStore_GetReservation_Call) Return(reservation db.Reservation, err 
 }
 
 func (_c *MockStore_GetReservation_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (db.Reservation, error)) *MockStore_GetReservation_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// GetReservationWithRoomCode provides a mock function for the type MockStore
+func (_mock *MockStore) GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) (db.GetReservationWithRoomCodeRow, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetReservationWithRoomCode")
+	}
+
+	var r0 db.GetReservationWithRoomCodeRow
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (db.GetReservationWithRoomCodeRow, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) db.GetReservationWithRoomCodeRow); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		r0 = ret.Get(0).(db.GetReservationWithRoomCodeRow)
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockStore_GetReservationWithRoomCode_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetReservationWithRoomCode'
+type MockStore_GetReservationWithRoomCode_Call struct {
+	*mock.Call
+}
+
+// GetReservationWithRoomCode is a helper method to define mock.On call
+//   - ctx
+//   - id
+func (_e *MockStore_Expecter) GetReservationWithRoomCode(ctx interface{}, id interface{}) *MockStore_GetReservationWithRoomCode_Call {
+	return &MockStore_GetReservationWithRoomCode_Call{Call: _e.mock.On("GetReservationWithRoomCode", ctx, id)}
+}
+
+func (_c *MockStore_GetReservationWithRoomCode_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockStore_GetReservationWithRoomCode_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(context.Context), args[1].(uuid.UUID))
+	})
+	return _c
+}
+
+func (_c *MockStore_GetReservationWithRoomCode_Call) Return(getReservationWithRoomCodeRow db.GetReservationWithRoomCodeRow, err error) *MockStore_GetReservationWithRoomCode_Call {
+	_c.Call.Return(getReservationWithRoomCodeRow, err)
+	return _c
+}
+
+func (_c *MockStore_GetReservationWithRoomCode_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (db.GetReservationWithRoomCodeRow, error)) *MockStore_GetReservationWithRoomCode_Call {
 	_c.Call.Return(run)
 	return _c
 }

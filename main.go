@@ -3,6 +3,7 @@ package main
 import (
 	"man/api"
 	"man/db"
+	_ "man/docs"
 	"man/task"
 	"man/util"
 
@@ -15,7 +16,7 @@ import (
 // @description     该系统用于管理自习室的预约、签到、退座等功能。
 // @termsOfService  http://swagger.io/terms/
 // @contact.name   API Support
-// @host      localhost:8080
+// @host      localhost:7077
 // @BasePath  /api/v1
 func main() {
 	// 加载配置文件

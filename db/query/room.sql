@@ -1,7 +1,7 @@
 -- 创建自习室，不考虑二维码/签到码
 -- name: CreateRoom :one
-INSERT INTO room (name, department, open_time, close_time)
-VALUES ($1, $2, $3, $4)
+INSERT INTO room (name, department, code, qr_code, open_time, close_time)
+VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
 -- 获取自习室信息
@@ -25,8 +25,8 @@ UPDATE room SET
     department = COALESCE(sqlc.narg(department), department),
     open_time = COALESCE(sqlc.narg(open_time), open_time),
     close_time = COALESCE(sqlc.narg(close_time), close_time),
-    -- qr_code = COALESCE(sqlc.narg(qr_code), qr_code),
-    -- code = COALESCE(sqlc.narg(code), code),
+    qr_code = COALESCE(sqlc.narg(qr_code), qr_code),
+    code = COALESCE(sqlc.narg(code), code),
     is_active = COALESCE(sqlc.narg(is_active), is_active)
 WHERE id = $1
 RETURNING *;

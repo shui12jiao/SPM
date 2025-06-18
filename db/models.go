@@ -5,20 +5,66 @@
 package db
 
 import (
+	"database/sql/driver"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
+type ReservationStatus string
+
+const (
+	ReservationStatusReserved  ReservationStatus = "reserved"
+	ReservationStatusCompleted ReservationStatus = "completed"
+	ReservationStatusCanceled  ReservationStatus = "canceled"
+	ReservationStatusViolated  ReservationStatus = "violated"
+)
+
+func (e *ReservationStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReservationStatus(s)
+	case string:
+		*e = ReservationStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReservationStatus: %T", src)
+	}
+	return nil
+}
+
+type NullReservationStatus struct {
+	ReservationStatus ReservationStatus `json:"reservation_status"`
+	Valid             bool              `json:"valid"` // Valid is true if ReservationStatus is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullReservationStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.ReservationStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.ReservationStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullReservationStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.ReservationStatus), nil
+}
+
 type Reservation struct {
-	ID          uuid.UUID `json:"id"`
-	UserID      int32     `json:"user_id"`
-	SeatID      int32     `json:"seat_id"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	Status      string    `json:"status"`
-	CheckinTime time.Time `json:"checkin_time"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          uuid.UUID         `json:"id"`
+	UserID      int32             `json:"user_id"`
+	SeatID      int32             `json:"seat_id"`
+	StartTime   time.Time         `json:"start_time"`
+	EndTime     time.Time         `json:"end_time"`
+	Status      ReservationStatus `json:"status"`
+	CheckinTime time.Time         `json:"checkin_time"`
+	CreatedAt   time.Time         `json:"created_at"`
 }
 
 type Room struct {

@@ -30,6 +30,9 @@ CREATE TABLE seat (
     is_available BOOLEAN NOT NULL DEFAULT TRUE -- 默认新建座位可用
 );
 
+-- 预约状态enum
+CREATE TYPE reservation_status AS ENUM ('reserved', 'completed', 'canceled', 'violated');
+
 -- 预约记录表
 CREATE TABLE reservation (
     id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
@@ -37,10 +40,8 @@ CREATE TABLE reservation (
     seat_id INT REFERENCES seat(id) NOT NULL,
     start_time TIMESTAMP NOT NULL,
     end_time TIMESTAMP NOT NULL,
-    status VARCHAR(20) CHECK (
-        status IN ('reserved', 'completed', 'canceled', 'violated')
-    ) NOT NULL DEFAULT 'reserved',
-    checkin_time TIMESTAMP NOT NULL DEFAULT NULL,
+    status reservation_status NOT NULL DEFAULT 'reserved',
+    checkin_time TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

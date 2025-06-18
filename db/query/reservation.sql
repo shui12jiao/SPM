@@ -19,6 +19,16 @@ RETURNING *;
 -- name: GetReservation :one
 SELECT * FROM reservation WHERE id = $1;
 
+-- 获取预约信息时附带座位所在房间的代码，用于签到
+-- name: GetReservationWithRoomCode :one
+SELECT
+    r.*,
+    rm.code AS room_code
+FROM reservation r
+JOIN seat s ON r.seat_id = s.id
+JOIN room rm ON s.room_id = rm.id
+WHERE r.id = $1;
+
 -- 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 -- name: ListReservation :many
 SELECT * FROM reservation 
@@ -38,15 +48,13 @@ LIMIT $1 OFFSET $2;
 -- name: UpdateReservationStatus :one
 UPDATE reservation SET
     status = $2,
-    checkin_time = CASE 
-        WHEN $2 = 'completed' THEN CURRENT_TIMESTAMP
-        ELSE checkin_time 
-    END
+    checkin_time = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
 
--- 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
--- name: DeleteReservation :exec
-DELETE FROM reservation 
-WHERE id = $1 AND start_time > CURRENT_TIMESTAMP;
 
+-- 取消预约（只能取消未开始的预约）
+-- name: DeleteReservation :execresult
+UPDATE reservation
+SET status = 'canceled'
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP AND status = 'reserved';
