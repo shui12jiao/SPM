@@ -170,6 +170,27 @@ func (server *Server) createReservation(ctx *gin.Context) {
 		return
 	}
 
+	now := time.Now().UTC()
+
+	// 检查开始时间
+	if req.StartTime.Before(now.Add(server.config.MinReservationAdvanceDuration)) || req.StartTime.After(now.Add(server.config.MaxReservationAdvanceDuration)) {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("预约开始时间错误: %s, 预约提前时间范围: %s - %s",
+			req.StartTime.Format(time.RFC3339),
+			server.config.MinReservationAdvanceDuration.String(),
+			server.config.MaxReservationAdvanceDuration.String())))
+		return
+	}
+
+	// 检查预约时长
+	reservationDur := req.EndTime.Sub(req.StartTime)
+	if reservationDur < server.config.MinReservationDuration || reservationDur > server.config.MaxReservationDuration {
+		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("预约时长错误: %s, 预约时长范围: %s - %s",
+			reservationDur.String(),
+			server.config.MinReservationDuration.String(),
+			server.config.MaxReservationDuration.String())))
+		return
+	}
+
 	// 检查座位是否存在且可用
 	seat, err := server.store.GetSeat(ctx, req.SeatID)
 	if err != nil {
@@ -183,17 +204,6 @@ func (server *Server) createReservation(ctx *gin.Context) {
 	if !seat.IsAvailable {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("座位不可用")))
 		return
-	}
-
-	// 检查开始时间是否在当前时间之前，且不超过最大提前时间
-	if req.StartTime.Before(time.Now()) || req.StartTime.After(time.Now().Add(server.config.MaxReservationAdvanceDuration)) {
-		ctx.JSON(http.StatusBadRequest, errorResponse(fmt.Errorf("开始时间必须在当前时间之后，并且不超过 %s", server.config.MaxReservationAdvanceDuration.String())))
-		return
-	}
-
-	// 检查时间是否冲突, 保证预约时长大于0，且小于最大预约时长
-	if req.StartTime.After(req.EndTime) || req.EndTime.After(req.StartTime.Add(server.config.MaxReservationDuration)) {
-		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约时长错误")))
 	}
 
 	arg := db.CreateReservationParams{
@@ -261,7 +271,7 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 	}
 
 	// 检查是否可以取消预约
-	if reservation.StartTime.Before(time.Now().Add(-server.config.CancellableReservationDuration)) {
+	if reservation.StartTime.Before(time.Now().UTC().Add(-server.config.CancellableReservationDuration)) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约已开始，无法取消")))
 	}
 
@@ -313,4 +323,9 @@ func (server *Server) checkIn(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, reservation)
+}
+
+// 格式22:50, 只取时分部分
+func timeExtract(t time.Time) time.Duration {
+	return time.Duration(t.Hour())*time.Hour + time.Duration(t.Minute())*time.Minute
 }

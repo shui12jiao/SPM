@@ -40,7 +40,7 @@ CREATE TABLE reservation (
     status VARCHAR(20) CHECK (
         status IN ('reserved', 'completed', 'canceled', 'violated')
     ) NOT NULL DEFAULT 'reserved',
-    checkin_time TIMESTAMP NOT NULL DEFAULT NULL,
+    checkin_time TIMESTAMP NOT NULL DEFAULT '1970-01-01 00:00:00',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
