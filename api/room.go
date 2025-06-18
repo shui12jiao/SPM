@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"man/db"
+	"man/util"
 	"net/http"
 	"time"
 
@@ -37,6 +38,8 @@ func (server *Server) createRoom(ctx *gin.Context) {
 	arg := db.CreateRoomParams{
 		Name:       req.Name,
 		Department: req.Department,
+		Code:       util.GenerateSignCode(),
+		QrCode:     "暂时不使用二维码",
 		OpenTime:   req.OpenTime,
 		CloseTime:  req.CloseTime,
 	}
