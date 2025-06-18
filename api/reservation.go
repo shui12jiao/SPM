@@ -284,7 +284,7 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 
 	// 检查是否可以取消预约
 	// query中已有检测逻辑，冗余
-	if time.Now().Add(server.config.CancellableReservationDuration).After(reservation.StartTime) {
+	if time.Now().UTC().Add(server.config.CancellableReservationDuration).After(reservation.StartTime) {
 		// 如果当前时间已经超过预约开始前的可取消时间，则无法取消
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约已开始，无法取消")))
 		return
@@ -325,12 +325,35 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		return
 	}
 
+	// 查找预约
+	reservation, err := server.store.GetReservation(ctx, uuid.MustParse(req.ID))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("预约不存在")))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if reservation.UserID != getUserID(ctx) { //检查是否为当前用户的预约
+		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("无权操作他人预约")))
+		return
+	}
+	if reservation.StartTime.After(time.Now().UTC()) { // 检查预约是否已开始
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约尚未开始，无法签到")))
+		return
+	}
+	if reservation.Status != db.ReservationStatusReserved { // 检查预约状态
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("只能对已预约状态的座位进行签到操作")))
+		return
+	}
+
 	arg := db.UpdateReservationStatusParams{
 		ID:     uuid.MustParse(req.ID),
 		Status: db.ReservationStatusCompleted,
 	}
 
-	reservation, err := server.store.UpdateReservationStatus(ctx, arg)
+	reservation, err = server.store.UpdateReservationStatus(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))

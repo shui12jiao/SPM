@@ -94,7 +94,7 @@ func (s *cronScheduler) AddOnceJob(jobName string, tag string, startTime time.Ti
 	log.Info().
 		Str("jobName", jobName).
 		Str("tag", tag).
-		Str("time", startTime.Format(time.RFC3339)).
+		Str("scheduled_time", startTime.Format(time.RFC3339)).
 		Msg("创建一次性定时任务成功")
 }
 

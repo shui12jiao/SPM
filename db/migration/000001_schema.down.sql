@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS violation;
 DROP TABLE IF EXISTS reservation;
+DROP TYPE IF EXISTS reservation_status;
 DROP TABLE IF EXISTS seat;
 DROP TABLE IF EXISTS room;
 DROP TABLE IF EXISTS "user";

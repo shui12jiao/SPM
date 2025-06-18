@@ -170,8 +170,8 @@ RETURNING id, user_id, seat_id, start_time, end_time, status, checkin_time, crea
 `
 
 type UpdateReservationStatusParams struct {
-	ID     uuid.UUID `json:"id"`
-	Status string    `json:"status"`
+	ID     uuid.UUID         `json:"id"`
+	Status ReservationStatus `json:"status"`
 }
 
 // 更新预约状态（含自动签到时间）
