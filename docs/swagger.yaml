@@ -253,10 +253,22 @@ definitions:
       start_time:
         type: string
       status:
-        type: string
+        $ref: '#/definitions/db.ReservationStatus'
       user_id:
         type: integer
     type: object
+  db.ReservationStatus:
+    enum:
+    - reserved
+    - completed
+    - canceled
+    - violated
+    type: string
+    x-enum-varnames:
+    - ReservationStatusReserved
+    - ReservationStatusCompleted
+    - ReservationStatusCanceled
+    - ReservationStatusViolated
   db.Room:
     properties:
       close_time:
@@ -1154,6 +1166,12 @@ paths:
         name: id
         required: true
         type: string
+      - description: 签到码
+        in: body
+        name: code
+        required: true
+        schema:
+          type: string
       produces:
       - application/json
       responses:

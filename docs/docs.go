@@ -1360,6 +1360,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "签到码",
+                        "name": "code",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -1918,12 +1927,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "type": "string"
+                    "$ref": "#/definitions/db.ReservationStatus"
                 },
                 "user_id": {
                     "type": "integer"
                 }
             }
+        },
+        "db.ReservationStatus": {
+            "type": "string",
+            "enum": [
+                "reserved",
+                "completed",
+                "canceled",
+                "violated"
+            ],
+            "x-enum-varnames": [
+                "ReservationStatusReserved",
+                "ReservationStatusCompleted",
+                "ReservationStatusCanceled",
+                "ReservationStatusViolated"
+            ]
         },
         "db.Room": {
             "type": "object",

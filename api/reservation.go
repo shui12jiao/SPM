@@ -313,6 +313,7 @@ type checkInRequest struct {
 // @Accept json
 // @Produce json
 // @Param id path string true "预约ID"
+// @Param code body string true "签到码"
 // @Success 200 {object} db.Reservation
 // @Failure 400
 // @Failure 404
@@ -332,7 +333,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 	}
 
 	// 查找预约
-	reservation, err := server.store.GetReservationWithRoomCode(ctx, uuid.MustParse(req.ID))
+	rs, err := server.store.GetReservationWithRoomCode(ctx, uuid.MustParse(req.ID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("预约不存在")))
@@ -341,19 +342,19 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	if reservation.RoomCode != req.Code { // 检查签到码
+	if rs.RoomCode != req.Code { // 检查签到码
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("签到码错误")))
 		return
 	}
-	if reservation.UserID != getUserID(ctx) { //检查是否为当前用户的预约
+	if rs.UserID != getUserID(ctx) { //检查是否为当前用户的预约
 		ctx.JSON(http.StatusForbidden, errorResponse(errors.New("无权操作他人预约")))
 		return
 	}
-	if reservation.StartTime.After(time.Now().UTC()) { // 检查预约是否已开始
+	if rs.StartTime.After(time.Now().UTC()) { // 检查预约是否已开始
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约尚未开始，无法签到")))
 		return
 	}
-	if reservation.Status != db.ReservationStatusReserved { // 检查预约状态
+	if rs.Status != db.ReservationStatusReserved { // 检查预约状态
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("只能对已预约状态的座位进行签到操作")))
 		return
 	}
@@ -363,7 +364,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		Status: db.ReservationStatusCompleted,
 	}
 
-	reservation, err = server.store.UpdateReservationStatus(ctx, arg)
+	upRs, err := server.store.UpdateReservationStatus(ctx, arg)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -373,7 +374,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, reservation)
+	ctx.JSON(http.StatusOK, upRs)
 }
 
 // 格式22:50, 只取时分部分
