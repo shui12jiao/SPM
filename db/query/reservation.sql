@@ -45,8 +45,10 @@ UPDATE reservation SET
 WHERE id = $1
 RETURNING *;
 
--- 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
--- name: DeleteReservation :exec
-DELETE FROM reservation 
-WHERE id = $1 AND start_time > CURRENT_TIMESTAMP;
 
+
+-- 取消预约（只能取消未开始的预约）
+-- name: CancelReservation :execresult
+UPDATE reservation
+SET status = 'canceled'
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP AND status = 'reserved';

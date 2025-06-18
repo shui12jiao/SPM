@@ -12,6 +12,8 @@ import (
 )
 
 type Querier interface {
+	// 取消预约（只能取消未开始的预约）
+	CancelReservation(ctx context.Context, id uuid.UUID) (sql.Result, error)
 	// 获取自习室数量
 	// 可选参数：is_active
 	CountRoom(ctx context.Context, isActive sql.NullBool) (int64, error)
@@ -28,8 +30,6 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
 	CreateViolation(ctx context.Context, arg CreateViolationParams) (Violation, error)
-	// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
-	DeleteReservation(ctx context.Context, id uuid.UUID) error
 	// 删除自习室
 	DeleteRoom(ctx context.Context, id int32) error
 	// 删除座位

@@ -278,11 +278,15 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 	// 检查是否可以取消预约
 	if reservation.StartTime.Before(time.Now().UTC().Add(-server.config.CancellableReservationDuration)) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约已开始，无法取消")))
+		return
 	}
 
-	err = server.store.DeleteReservation(ctx, id)
+	result, err := server.store.CancelReservation(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	} else if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, errorResponse(errors.New("预约不存在或已取消")))
 		return
 	}
 

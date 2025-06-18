@@ -13,6 +13,17 @@ import (
 	"github.com/google/uuid"
 )
 
+const cancelReservation = `-- name: CancelReservation :execresult
+UPDATE reservation
+SET status = 'canceled'
+WHERE id = $1 AND start_time > CURRENT_TIMESTAMP AND status = 'reserved'
+`
+
+// 取消预约（只能取消未开始的预约）
+func (q *Queries) CancelReservation(ctx context.Context, id uuid.UUID) (sql.Result, error) {
+	return q.db.ExecContext(ctx, cancelReservation, id)
+}
+
 const createReservation = `-- name: CreateReservation :one
 INSERT INTO reservation (user_id, seat_id, start_time, end_time)
 SELECT $1, $2, $3, $4
@@ -58,17 +69,6 @@ func (q *Queries) CreateReservation(ctx context.Context, arg CreateReservationPa
 		&i.CreatedAt,
 	)
 	return i, err
-}
-
-const deleteReservation = `-- name: DeleteReservation :exec
-DELETE FROM reservation 
-WHERE id = $1 AND start_time > CURRENT_TIMESTAMP
-`
-
-// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
-func (q *Queries) DeleteReservation(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.ExecContext(ctx, deleteReservation, id)
-	return err
 }
 
 const getReservation = `-- name: GetReservation :one
