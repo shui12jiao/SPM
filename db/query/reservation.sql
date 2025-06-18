@@ -19,6 +19,16 @@ RETURNING *;
 -- name: GetReservation :one
 SELECT * FROM reservation WHERE id = $1;
 
+-- 获取预约信息时附带座位所在房间的代码，用于签到
+-- name: GetReservationWithRoomCode :one
+SELECT
+    r.*,
+    rm.code AS room_code
+FROM reservation r
+JOIN seat s ON r.seat_id = s.id
+JOIN room rm ON s.room_id = rm.id
+WHERE r.id = $1;
+
 -- 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 -- name: ListReservation :many
 SELECT * FROM reservation 

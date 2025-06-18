@@ -40,6 +40,8 @@ type Querier interface {
 	// 参数为：超时时间（分钟）
 	ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error)
 	GetReservation(ctx context.Context, id uuid.UUID) (Reservation, error)
+	// 获取预约信息时附带座位所在房间的代码，用于签到
+	GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) (GetReservationWithRoomCodeRow, error)
 	// 获取自习室信息
 	GetRoom(ctx context.Context, id int32) (Room, error)
 	// 自习室实时使用统计（含插座统计）

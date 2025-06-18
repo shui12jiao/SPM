@@ -303,7 +303,8 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 }
 
 type checkInRequest struct {
-	ID string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
+	ID   string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
+	Code string `json:"code" binding:"required"`   // 签到码
 }
 
 // checkIn 签到
@@ -325,14 +326,23 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		return
 	}
 
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
 	// 查找预约
-	reservation, err := server.store.GetReservation(ctx, uuid.MustParse(req.ID))
+	reservation, err := server.store.GetReservationWithRoomCode(ctx, uuid.MustParse(req.ID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("预约不存在")))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	if reservation.RoomCode != req.Code { // 检查签到码
+		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("签到码错误")))
 		return
 	}
 	if reservation.UserID != getUserID(ctx) { //检查是否为当前用户的预约

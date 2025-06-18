@@ -91,6 +91,46 @@ func (q *Queries) GetReservation(ctx context.Context, id uuid.UUID) (Reservation
 	return i, err
 }
 
+const getReservationWithRoomCode = `-- name: GetReservationWithRoomCode :one
+SELECT
+    r.id, r.user_id, r.seat_id, r.start_time, r.end_time, r.status, r.checkin_time, r.created_at,
+    rm.code AS room_code
+FROM reservation r
+JOIN seat s ON r.seat_id = s.id
+JOIN room rm ON s.room_id = rm.id
+WHERE r.id = $1
+`
+
+type GetReservationWithRoomCodeRow struct {
+	ID          uuid.UUID         `json:"id"`
+	UserID      int32             `json:"user_id"`
+	SeatID      int32             `json:"seat_id"`
+	StartTime   time.Time         `json:"start_time"`
+	EndTime     time.Time         `json:"end_time"`
+	Status      ReservationStatus `json:"status"`
+	CheckinTime time.Time         `json:"checkin_time"`
+	CreatedAt   time.Time         `json:"created_at"`
+	RoomCode    string            `json:"room_code"`
+}
+
+// 获取预约信息时附带座位所在房间的代码，用于签到
+func (q *Queries) GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) (GetReservationWithRoomCodeRow, error) {
+	row := q.db.QueryRowContext(ctx, getReservationWithRoomCode, id)
+	var i GetReservationWithRoomCodeRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.SeatID,
+		&i.StartTime,
+		&i.EndTime,
+		&i.Status,
+		&i.CheckinTime,
+		&i.CreatedAt,
+		&i.RoomCode,
+	)
+	return i, err
+}
+
 const listReservation = `-- name: ListReservation :many
 SELECT id, user_id, seat_id, start_time, end_time, status, checkin_time, created_at FROM reservation 
 WHERE
