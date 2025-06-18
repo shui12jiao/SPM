@@ -28,7 +28,6 @@ type CreateReservationTaskArg struct {
 }
 
 func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) error {
-	// 链式处理预约创建任务
 	// 任务列表：
 	// 在预约开始前15min发送邮件提醒
 	// 在预约开始后10min，检查是否签到，未签到则发送邮件提醒
@@ -50,7 +49,7 @@ func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) err
 			return s.email.SendEmail(
 				[]string{user.Email},
 				"自习室签到提醒",
-				fmt.Sprintf("你的自习室预约将在%s开始，请及时签到。", arg.ReservationTime.Format(time.TimeOnly)),
+				fmt.Sprintf("你的自习室预约将在%s开始，请及时签到。", arg.ReservationTime.Local().Format(time.TimeOnly)),
 				[]string{},
 				[]string{},
 				[]string{},
@@ -86,7 +85,7 @@ func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) err
 				[]string{user.Email},
 				"自习室签到提醒",
 				fmt.Sprintf("你的自习室预约已于%s开始，请及时签到！超时%.0f分钟未签到将视为违约。",
-					arg.ReservationTime.Format(time.TimeOnly),
+					arg.ReservationTime.Local().Format(time.TimeOnly),
 					arg.ViolationDuration.Minutes(),
 				),
 				[]string{},
@@ -131,6 +130,22 @@ func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) err
 			})
 			if err != nil {
 				log.Error().Err(err).Str("reservationID", arg.ReservationID.String()).Msg("创建违约记录失败")
+				return err
+			}
+
+			// 发送邮件
+			err = s.email.SendEmail(
+				[]string{user.Email},
+				"自习室违约通知",
+				fmt.Sprintf("你的自习室预约已于%s开始，但你未签到，已视为违约。请注意后续的违约处理。",
+					arg.ReservationTime.Local().Format(time.TimeOnly),
+				),
+				[]string{},
+				[]string{},
+				[]string{},
+			)
+			if err != nil {
+				log.Error().Err(err).Str("reservationID", arg.ReservationID.String()).Msg("发送违约通知邮件失败")
 				return err
 			}
 

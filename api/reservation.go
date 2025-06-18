@@ -170,6 +170,9 @@ func (server *Server) createReservation(ctx *gin.Context) {
 		return
 	}
 
+	// 将时间转换为 UTC
+	req.StartTime = req.StartTime.UTC()
+	req.EndTime = req.EndTime.UTC()
 	now := time.Now().UTC()
 
 	// 检查开始时间
@@ -237,7 +240,7 @@ func (server *Server) createReservation(ctx *gin.Context) {
 }
 
 type deleteReservationRequest struct {
-	ID uuid.UUID `uri:"id" binding:"required,min=1"`
+	ID string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
 }
 
 // deleteReservation 取消预约
@@ -259,8 +262,10 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 		return
 	}
 
+	// 转换为 UUID
+	id := uuid.MustParse(req.ID)
 	// 获取预约开始时间
-	reservation, err := server.store.GetReservation(ctx, req.ID)
+	reservation, err := server.store.GetReservation(ctx, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -275,7 +280,7 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("预约已开始，无法取消")))
 	}
 
-	err = server.store.DeleteReservation(ctx, req.ID)
+	err = server.store.DeleteReservation(ctx, id)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -285,7 +290,7 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 }
 
 type checkInRequest struct {
-	ID uuid.UUID `uri:"id" binding:"required,min=1"`
+	ID string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
 }
 
 // checkIn 签到
@@ -308,7 +313,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateReservationStatusParams{
-		ID:     req.ID,
+		ID:     uuid.MustParse(req.ID),
 		Status: db.ReservationStatusCompleted,
 	}
 
