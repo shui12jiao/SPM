@@ -14,7 +14,7 @@ import (
 type createSeatRequest struct {
 	RoomID      int32  `json:"room_id" binding:"required,min=1"`
 	Number      string `json:"seat_num" binding:"required,min=1"`
-	HasSocket   bool   `json:"has_socket" binding:"required"`
+	HasSocket   bool   `json:"has_socket"`
 	IsAvailable bool   `json:"is_available"`
 }
 
@@ -222,8 +222,8 @@ type createSeatsRequest struct {
 	RoomID int32 `json:"room_id" binding:"required,min=1"`
 	Seats  []struct {
 		Number      string `json:"seat_num" binding:"required,min=1"`
-		HasSocket   bool   `json:"has_socket" binding:"required"`
-		IsAvailable bool   `json:"is_available" binding:"required"`
+		HasSocket   bool   `json:"has_socket"`
+		IsAvailable bool   `json:"is_available"`
 	} `json:"seats" binding:"required,min=1"`
 }
 
@@ -237,7 +237,7 @@ type createSeatsRequest struct {
 // @Failure 400
 // @Failure 500
 // @Security BearerAuth
-// @Router /admin/seat/batch [post]
+// @Router /admin/seats [post]
 func (server *Server) createSeats(ctx *gin.Context) {
 	var req createSeatsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -274,10 +274,10 @@ func (server *Server) createSeats(ctx *gin.Context) {
 
 type updateSeatsRequest struct {
 	Seats []struct {
-		ID          int32  `json:"ids" binding:"required,min=1"`
+		ID          int32  `json:"id" binding:"required,min=1"`
 		Number      string `json:"seat_num" binding:"required,min=1"`
-		HasSocket   bool   `json:"has_socket" binding:"required"`
-		IsAvailable bool   `json:"is_available" binding:"required"`
+		HasSocket   bool   `json:"has_socket"`
+		IsAvailable bool   `json:"is_available"`
 	} `json:"seats" binding:"required,min=1"`
 }
 
@@ -291,7 +291,7 @@ type updateSeatsRequest struct {
 // @Failure 400
 // @Failure 500
 // @Security BearerAuth
-// @Router /admin/seat/batch [patch]
+// @Router /admin/seats [patch]
 func (server *Server) updateSeats(ctx *gin.Context) {
 	var req updateSeatsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

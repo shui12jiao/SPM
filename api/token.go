@@ -27,7 +27,7 @@ type refreshAccessTokenResponse struct {
 // @Failure 400
 // @Failure 401
 // @Failure 500
-// @Router /v1/token/refresh [post]
+// @Router /v1/refresh [post]
 func (server *Server) refreshAccessToken(ctx *gin.Context) {
 	var req refreshAccessTokenRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

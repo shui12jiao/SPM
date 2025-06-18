@@ -174,7 +174,7 @@ WHERE
     ($3::INT IS NULL OR s.room_id = $3) AND
     ($4::BOOLEAN IS NULL OR s.has_socket = $4) AND
     ($5::BOOLEAN IS NULL OR s.is_available = $5)
-ORDER BY s.room_id, s.number
+ORDER BY s.room_id, s.id
 LIMIT $1 OFFSET $2
 `
 

@@ -43,7 +43,6 @@ definitions:
         minLength: 1
         type: string
     required:
-    - has_socket
     - room_id
     - seat_num
     type: object
@@ -63,8 +62,6 @@ definitions:
               minLength: 1
               type: string
           required:
-          - has_socket
-          - is_available
           - seat_num
           type: object
         minItems: 1
@@ -176,7 +173,7 @@ definitions:
           properties:
             has_socket:
               type: boolean
-            ids:
+            id:
               minimum: 1
               type: integer
             is_available:
@@ -185,9 +182,7 @@ definitions:
               minLength: 1
               type: string
           required:
-          - has_socket
-          - ids
-          - is_available
+          - id
           - seat_num
           type: object
         minItems: 1
@@ -692,7 +687,7 @@ paths:
       summary: 更新座位信息（不可更改RoomID）
       tags:
       - Seat
-  /admin/seat/batch:
+  /admin/seats:
     patch:
       consumes:
       - application/json
@@ -1036,6 +1031,34 @@ paths:
       summary: 获取当前用户的预约记录（分页）
       tags:
       - Reservation
+  /v1/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 使用refresh token刷新access token
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.refreshAccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.refreshAccessTokenResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 刷新访问令牌
+      tags:
+      - Auth
   /v1/reservation:
     post:
       consumes:
@@ -1149,34 +1172,6 @@ paths:
       summary: 签到已预约座位
       tags:
       - Reservation
-  /v1/token/refresh:
-    post:
-      consumes:
-      - application/json
-      description: 使用refresh token刷新access token
-      parameters:
-      - description: Refresh Token Request
-        in: body
-        name: data
-        required: true
-        schema:
-          $ref: '#/definitions/api.refreshAccessTokenRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/api.refreshAccessTokenResponse'
-        "400":
-          description: Bad Request
-        "401":
-          description: Unauthorized
-        "500":
-          description: Internal Server Error
-      summary: 刷新访问令牌
-      tags:
-      - Auth
   /v1/user:
     get:
       description: 支持分页和按角色/部门过滤
