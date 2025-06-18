@@ -61,7 +61,7 @@ func (s *cronScheduler) CreateReservationTasks(arg CreateReservationTaskArg) err
 	s.AddOnceJob(
 		"预约开始后提醒",
 		arg.ReservationID.String(),
-		arg.ReservationTime.Add(-arg.RemindBeforeDuration),
+		arg.ReservationTime.Add(arg.RemindAfterDuration),
 		func() error {
 			// 获取预约信息
 			// 闭包参数reservationID
