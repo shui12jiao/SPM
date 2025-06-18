@@ -70,13 +70,17 @@ func (s *cronScheduler) AddJob(jobName string, tag string, crontab string, funct
 		log.Error().Err(err).Str("jobName", jobName).Msg("无法创建定时任务")
 		return
 	}
-	log.Info().Str("jobName", jobName).Str("crontab", crontab).Msg("创建定时任务成功")
+	log.Info().
+		Str("jobName", jobName).
+		Str("tag", tag).
+		Str("crontab", crontab).
+		Msg("创建定时任务成功")
 }
 
 // 一次性任务，于time执行
-func (s *cronScheduler) AddOnceJob(jobName string, tag string, time time.Time, function any, parameters ...any) {
+func (s *cronScheduler) AddOnceJob(jobName string, tag string, startTime time.Time, function any, parameters ...any) {
 	_, err := s.scheduler.NewJob(
-		gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(time)),                      // 一次性任务
+		gocron.OneTimeJob(gocron.OneTimeJobStartDateTime(startTime)),                 // 一次性任务
 		gocron.NewTask(function, parameters...),                                      // 任务函数和参数
 		gocron.WithEventListeners(panicListener(), errorListener(), afterListener()), // 事件监听
 		gocron.WithName(jobName),                                                     // 任务名称
@@ -87,7 +91,11 @@ func (s *cronScheduler) AddOnceJob(jobName string, tag string, time time.Time, f
 		log.Error().Err(err).Str("jobName", jobName).Msg("无法创建定时任务")
 		return
 	}
-	log.Info().Str("jobName", jobName).Msg("创建一次性定时任务成功")
+	log.Info().
+		Str("jobName", jobName).
+		Str("tag", tag).
+		Str("time", startTime.Format(time.RFC3339)).
+		Msg("创建一次性定时任务成功")
 }
 
 // 删除指定标签的任务
