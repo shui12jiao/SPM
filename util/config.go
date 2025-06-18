@@ -67,8 +67,8 @@ func LoadConfig(path string) Config {
 			MaxReservationAdvanceDuration:   parseDuration(MustGetEnvString("MAX_RESERVATION_ADVANCE_DURATION")),
 			CancellableReservationDuration:  parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
 			ReservationRemindBeforeDuration: parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-			ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-			ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+			ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_AFTER_DURATION")),
+			ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_VIOLATION_DURATION")),
 		},
 
 		EmailConfig: EmailConfig{

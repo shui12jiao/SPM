@@ -38,13 +38,9 @@ LIMIT $1 OFFSET $2;
 -- name: UpdateReservationStatus :one
 UPDATE reservation SET
     status = $2,
-    checkin_time = CASE 
-        WHEN $2 = 'completed' THEN CURRENT_TIMESTAMP
-        ELSE checkin_time 
-    END
+    checkin_time = CURRENT_TIMESTAMP
 WHERE id = $1
 RETURNING *;
-
 
 
 -- 取消预约（只能取消未开始的预约）
