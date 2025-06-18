@@ -142,8 +142,8 @@ func (server *Server) getMe(ctx *gin.Context) {
 // 允许更新的字段：password，email
 // PATCH /v1/me
 type updateMeRequest struct {
-	Password string `json:"password" binding:"omitempty,password"`
-	Email    string `json:"email" binding:"omitempty,email"`
+	Password *string `json:"password" binding:"omitempty,password"`
+	Email    *string `json:"email" binding:"omitempty,email"`
 }
 
 // updateMe 更新当前用户信息
