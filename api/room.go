@@ -97,6 +97,7 @@ func (server *Server) deleteRoom(ctx *gin.Context) {
 
 type updateRoomRequest struct {
 	ID         int32      `uri:"id" binding:"required,min=1"`
+	Code       *string    `json:"code" binding:"omitempty"`
 	Name       *string    `json:"name" binding:"omitempty"`
 	Department *string    `json:"department" binding:"omitempty"`
 	OpenTime   *time.Time `json:"open_time" binding:"omitempty"`
@@ -132,6 +133,7 @@ func (server *Server) updateRoom(ctx *gin.Context) {
 
 	arg := db.UpdateRoomParams{
 		ID:         req.ID,
+		Code:       db.ToNull[sql.NullString](req.Code),
 		Name:       db.ToNull[sql.NullString](req.Name),
 		Department: db.ToNull[sql.NullString](req.Department),
 		OpenTime:   db.ToNull[sql.NullTime](req.OpenTime),
