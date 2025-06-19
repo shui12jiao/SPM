@@ -302,9 +302,14 @@ func (server *Server) deleteReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, nil)
 }
 
-type checkInRequest struct {
-	ID   string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
-	Code string `json:"code" binding:"required"`   // 签到码
+type checkInRequestURI struct {
+	ID string `uri:"id" binding:"required,uuid"` // 预约ID，使用UUID格式
+}
+
+// checkInBody 用于绑定签到请求体
+// 因为都用了required tag，所以无法同一结构体两次分开banding
+type checkInRequestBody struct {
+	Code string `json:"code" binding:"required"`
 }
 
 // checkIn 签到
@@ -321,19 +326,20 @@ type checkInRequest struct {
 // @Security BearerAuth
 // @Router /v1/reservation/{id}/checkin [post]
 func (server *Server) checkIn(ctx *gin.Context) {
-	var req checkInRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	var reqID checkInRequestURI
+	var reqBody checkInRequestBody
+	if err := ctx.ShouldBindUri(&reqID); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&reqBody); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
 	// 查找预约
-	rs, err := server.store.GetReservationWithRoomCode(ctx, uuid.MustParse(req.ID))
+	rs, err := server.store.GetReservationWithRoomCode(ctx, uuid.MustParse(reqID.ID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(errors.New("预约不存在")))
@@ -342,7 +348,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	if rs.RoomCode != req.Code { // 检查签到码
+	if rs.RoomCode != reqBody.Code { // 检查签到码
 		ctx.JSON(http.StatusBadRequest, errorResponse(errors.New("签到码错误")))
 		return
 	}
@@ -360,7 +366,7 @@ func (server *Server) checkIn(ctx *gin.Context) {
 	}
 
 	arg := db.UpdateReservationStatusParams{
-		ID:     uuid.MustParse(req.ID),
+		ID:     uuid.MustParse(reqID.ID),
 		Status: db.ReservationStatusCompleted,
 	}
 
