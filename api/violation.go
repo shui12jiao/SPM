@@ -12,8 +12,23 @@ import (
 // listMyViolation获取我的违规记录
 // GET /me/violation
 
-type listMyViolationRequest = Pagination
+type listMyViolationRequest struct {
+	Pagination
+	// 可选参数
+	ReservationID *uuid.UUID `form:"reservation_id"` // 预约ID
+}
 
+// listMyViolation 获取当前用户的违规记录
+// @Summary 获取我的违规记录
+// @Description 获取当前登录用户的违规记录，支持分页
+// @Tags Violation
+// @Accept json
+// @Produce json
+// @Param request query listMyViolationRequest false "查询参数"
+// @Success 200 {array} db.Violation
+// @Failure 400
+// @Router /me/violation [get]
+// @Security ApiKeyAuth
 func (server *Server) listMyViolation(ctx *gin.Context) {
 	var req listMyViolationRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -47,6 +62,19 @@ type updateViolationRequest struct {
 	Reason string `json:"reason" binding:"required,min=1,max=100"`
 }
 
+// updateViolation 更新我的违规记录
+// @Summary 更新违规记录理由
+// @Description 修改违规记录的说明理由，仅允许修改自己的记录
+// @Tags Violation
+// @Accept json
+// @Produce json
+// @Param id path int true "违规记录ID"
+// @Param data body updateViolationRequest true "理由信息"
+// @Success 200 {object} db.Violation
+// @Failure 400
+// @Failure 404
+// @Router /me/violation/{id} [patch]
+// @Security ApiKeyAuth
 func (server *Server) updateViolation(ctx *gin.Context) {
 	var req updateViolationRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -86,6 +114,20 @@ type listViolationRequest struct {
 	UserID        *int32     `form:"user_id"`        // 用户ID
 }
 
+// listViolation 获取违规记录列表
+// @Summary 获取所有违规记录
+// @Description 管理员获取所有违规记录，支持按预约ID和用户ID过滤
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param page query int false "页码，默认1"
+// @Param page_size query int false "每页数量，默认10"
+// @Param reservation_id query string false "预约ID，UUID格式"
+// @Param user_id query int false "用户ID"
+// @Success 200 {array} db.Violation
+// @Failure 400
+// @Router /violation [get]
+// @Security ApiKeyAuth
 func (server *Server) listViolation(ctx *gin.Context) {
 	var req listViolationRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
@@ -116,6 +158,18 @@ type getViolationRequest struct {
 	ViolationID int32 `uri:"id" binding:"required,min=1"`
 }
 
+// getViolation 获取违规记录详情
+// @Summary 获取违规记录详情
+// @Description 管理员获取指定ID的违规记录
+// @Tags Admin
+// @Accept json
+// @Produce json
+// @Param id path int true "违规记录ID"
+// @Success 200 {object} db.Violation
+// @Failure 400
+// @Failure 404
+// @Router /violation/{id} [get]
+// @Security ApiKeyAuth
 func (server *Server) getViolation(ctx *gin.Context) {
 	var req getViolationRequest
 	if err := ctx.ShouldBindUri(&req); err != nil {

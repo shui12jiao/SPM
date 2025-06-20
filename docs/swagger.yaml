@@ -1,5 +1,324 @@
 basePath: /api/v1
-host: localhost:58888
+definitions:
+  api.createReservationRequest:
+    properties:
+      end_time:
+        type: string
+      seat_id:
+        minimum: 1
+        type: integer
+      start_time:
+        type: string
+    required:
+    - end_time
+    - seat_id
+    - start_time
+    type: object
+  api.createRoomRequest:
+    properties:
+      close_time:
+        type: string
+      department:
+        type: string
+      name:
+        type: string
+      open_time:
+        type: string
+    required:
+    - close_time
+    - department
+    - name
+    - open_time
+    type: object
+  api.createSeatRequest:
+    properties:
+      has_socket:
+        type: boolean
+      is_available:
+        type: boolean
+      room_id:
+        minimum: 1
+        type: integer
+      seat_num:
+        minLength: 1
+        type: string
+    required:
+    - room_id
+    - seat_num
+    type: object
+  api.createSeatsRequest:
+    properties:
+      room_id:
+        minimum: 1
+        type: integer
+      seats:
+        items:
+          properties:
+            has_socket:
+              type: boolean
+            is_available:
+              type: boolean
+            seat_num:
+              minLength: 1
+              type: string
+          required:
+          - seat_num
+          type: object
+        minItems: 1
+        type: array
+    required:
+    - room_id
+    - seats
+    type: object
+  api.createUserRequest:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - department
+    - email
+    - password
+    - role
+    - username
+    type: object
+  api.loginUserRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  api.loginUserResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+      refresh_token:
+        type: string
+      refresh_token_expires_at:
+        type: string
+      user:
+        $ref: '#/definitions/api.userResponse'
+    type: object
+  api.refreshAccessTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  api.refreshAccessTokenResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+    type: object
+  api.updateMeRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  api.updateRoomRequest:
+    properties:
+      close_time:
+        type: string
+      code:
+        type: string
+      department:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      open_time:
+        type: string
+    required:
+    - id
+    type: object
+  api.updateSeatRequest:
+    properties:
+      has_socket:
+        type: boolean
+      id:
+        minimum: 1
+        type: integer
+      is_available:
+        type: boolean
+      seat_num:
+        minLength: 1
+        type: string
+    required:
+    - id
+    type: object
+  api.updateSeatsRequest:
+    properties:
+      seats:
+        items:
+          properties:
+            has_socket:
+              type: boolean
+            id:
+              minimum: 1
+              type: integer
+            is_available:
+              type: boolean
+            seat_num:
+              minLength: 1
+              type: string
+          required:
+          - id
+          - seat_num
+          type: object
+        minItems: 1
+        type: array
+    required:
+    - seats
+    type: object
+  api.updateUserRequest:
+    properties:
+      department:
+        type: string
+      email:
+        type: string
+      id:
+        minimum: 1
+        type: integer
+      password:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+    required:
+    - id
+    type: object
+  api.updateViolationRequest:
+    properties:
+      reason:
+        description: Reason 违规理由
+        maxLength: 100
+        minLength: 1
+        type: string
+      violationID:
+        description: ViolationID 违规记录ID
+        minimum: 1
+        type: integer
+    required:
+    - reason
+    - violationID
+    type: object
+  api.userResponse:
+    properties:
+      created_at:
+        type: string
+      department:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      role:
+        type: string
+      username:
+        type: string
+    type: object
+  db.Reservation:
+    properties:
+      checkin_time:
+        type: string
+      created_at:
+        type: string
+      end_time:
+        type: string
+      id:
+        type: string
+      seat_id:
+        type: integer
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/db.ReservationStatus'
+      user_id:
+        type: integer
+    type: object
+  db.ReservationStatus:
+    enum:
+    - reserved
+    - completed
+    - canceled
+    - violated
+    type: string
+    x-enum-varnames:
+    - ReservationStatusReserved
+    - ReservationStatusCompleted
+    - ReservationStatusCanceled
+    - ReservationStatusViolated
+  db.Room:
+    properties:
+      close_time:
+        type: string
+      code:
+        type: string
+      department:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      name:
+        type: string
+      open_time:
+        type: string
+      qr_code:
+        type: string
+    type: object
+  db.Seat:
+    properties:
+      has_socket:
+        type: boolean
+      id:
+        type: integer
+      is_available:
+        type: boolean
+      number:
+        type: string
+      room_id:
+        type: integer
+    type: object
+  db.Violation:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      reason:
+        type: string
+      reservation_id:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
+    type: object
+host: localhost:7077
 info:
   contact:
     name: API Support
@@ -7,5 +326,996 @@ info:
   termsOfService: http://swagger.io/terms/
   title: 自习室管理系统 API
   version: "1.0"
-paths: {}
+paths:
+  /admin/reservation:
+    get:
+      consumes:
+      - application/json
+      description: 支持按时间、用户、座位、状态过滤，并分页返回预约信息
+      parameters:
+      - description: 起始时间 (ISO8601)
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间 (ISO8601)
+        in: query
+        name: end_time
+        type: string
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: integer
+      - description: 座位ID
+        in: query
+        name: seat_id
+        type: integer
+      - description: 预约状态
+        in: query
+        name: status
+        type: string
+      - description: 页码，从1开始
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页数量 (5–50)
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Reservation'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 条件获取预约列表
+      tags:
+      - Reservation
+  /admin/reservation/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据预约 ID 获取预约信息
+      parameters:
+      - description: 预约ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Reservation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取预约详情
+      tags:
+      - Reservation
+  /admin/room:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 自习室参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Room'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 创建自习室
+      tags:
+      - Room
+  /admin/room/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 自习室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 删除自习室
+      tags:
+      - Room
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 自习室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Room'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取自习室详情
+      tags:
+      - Room
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 自习室ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 可更新字段
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateRoomRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Room'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 更新自习室
+      tags:
+      - Room
+  /admin/room/usage:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取各自习室当前使用情况（预约和签到统计）
+      tags:
+      - Room
+  /admin/seat:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 自习室ID
+        in: query
+        name: room_id
+        type: integer
+      - description: 是否有插座
+        in: query
+        name: has_socket
+        type: boolean
+      - description: 是否可用
+        in: query
+        name: is_available
+        type: boolean
+      - description: 页码，从1开始
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Seat'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取座位列表（支持分页和条件过滤）
+      tags:
+      - Seat
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createSeatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Seat'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 创建单个座位
+      tags:
+      - Seat
+  /admin/seat/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 删除座位
+      tags:
+      - Seat
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Seat'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取座位详情
+      tags:
+      - Seat
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 可修改字段
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateSeatRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Seat'
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 更新座位信息（不可更改RoomID）
+      tags:
+      - Seat
+  /admin/seats:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位批量更新参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateSeatsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Seat'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 批量更新座位信息（如状态/插座）
+      tags:
+      - Seat
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 座位数组及所属自习室
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createSeatsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Seat'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 批量创建座位（用于初始化）
+      tags:
+      - Seat
+  /admin/user:
+    post:
+      consumes:
+      - application/json
+      description: 管理员创建用户账户
+      parameters:
+      - description: 用户信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 创建新用户
+      tags:
+      - User
+  /admin/user/{id}:
+    delete:
+      description: 管理员删除指定用户
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 删除用户
+      tags:
+      - User
+    get:
+      description: 管理员通过用户ID获取用户信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取用户信息
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: 管理员更新指定用户信息
+      parameters:
+      - description: 用户ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新内容
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 更新用户
+      tags:
+      - User
+  /me/violation:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的违规记录，支持分页
+      parameters:
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 5
+        name: page_size
+        required: true
+        type: integer
+      - description: 可选参数
+        in: query
+        name: reservation_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Violation'
+            type: array
+        "400":
+          description: Bad Request
+      security:
+      - ApiKeyAuth: []
+      summary: 获取我的违规记录
+      tags:
+      - Violation
+  /me/violation/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: 修改违规记录的说明理由，仅允许修改自己的记录
+      parameters:
+      - description: 违规记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 理由信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateViolationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Violation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: 更新违规记录理由
+      tags:
+      - Violation
+  /v1/login:
+    post:
+      consumes:
+      - application/json
+      description: 使用用户名和密码登录，获取 access 和 refresh token
+      parameters:
+      - description: 登录请求
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.loginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.loginUserResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 用户登录
+      tags:
+      - Auth
+  /v1/me:
+    get:
+      description: 获取登录用户的基本信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - User
+    patch:
+      consumes:
+      - application/json
+      description: 仅支持修改密码和邮箱
+      parameters:
+      - description: 更新内容
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.updateMeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.userResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 更新当前用户信息
+      tags:
+      - User
+  /v1/me/reservation:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: 起始时间 (ISO8601)
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间 (ISO8601)
+        in: query
+        name: end_time
+        type: string
+      - description: 座位ID
+        in: query
+        name: seat_id
+        type: integer
+      - description: 预约状态
+        in: query
+        name: status
+        type: string
+      - description: 页码，从1开始
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页数量 (5–50)
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Reservation'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取当前用户的预约记录（分页）
+      tags:
+      - Reservation
+  /v1/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 使用refresh token刷新access token
+      parameters:
+      - description: Refresh Token Request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.refreshAccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.refreshAccessTokenResponse'
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      summary: 刷新访问令牌
+      tags:
+      - Auth
+  /v1/reservation:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 预约参数
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createReservationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Reservation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 创建预约
+      tags:
+      - Reservation
+  /v1/reservation/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: 预约ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 取消指定预约
+      tags:
+      - Reservation
+    get:
+      consumes:
+      - application/json
+      description: 根据预约 ID 获取预约信息
+      parameters:
+      - description: 预约ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Reservation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取预约详情
+      tags:
+      - Reservation
+  /v1/reservation/{id}/checkin:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 预约ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 签到码
+        in: body
+        name: code
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Reservation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 签到已预约座位
+      tags:
+      - Reservation
+  /v1/user:
+    get:
+      description: 支持分页和按角色/部门过滤
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      - description: 角色过滤
+        in: query
+        name: role
+        type: string
+      - description: 部门过滤
+        in: query
+        name: department
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.userResponse'
+            type: array
+        "400":
+          description: Bad Request
+        "500":
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: 获取用户列表
+      tags:
+      - User
+  /violation:
+    get:
+      consumes:
+      - application/json
+      description: 管理员获取所有违规记录，支持按预约ID和用户ID过滤
+      parameters:
+      - description: 页码，默认1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认10
+        in: query
+        name: page_size
+        type: integer
+      - description: 预约ID，UUID格式
+        in: query
+        name: reservation_id
+        type: string
+      - description: 用户ID
+        in: query
+        name: user_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/db.Violation'
+            type: array
+        "400":
+          description: Bad Request
+      security:
+      - ApiKeyAuth: []
+      summary: 获取所有违规记录
+      tags:
+      - Admin
+  /violation/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 管理员获取指定ID的违规记录
+      parameters:
+      - description: 违规记录ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/db.Violation'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: 获取违规记录详情
+      tags:
+      - Admin
 swagger: "2.0"

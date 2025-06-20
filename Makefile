@@ -1,6 +1,6 @@
 .PHONY: postgres createdb dropdb sqlc swag test migrate migrateup migratedown
 
-DB_URL=postgres://admin:admin@localhost
+DB_URL=postgres://admin:admin@192.168.31.128/man?sslmode=disable
 
 postgres:
 	docker run --name postgres --network host -e POSTGRES_USER=admin -e POSTGRES_PASSWORD=admin -d postgres:17-alpine

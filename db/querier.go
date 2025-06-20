@@ -28,8 +28,8 @@ type Querier interface {
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// 创建关联预约的违约记录
 	CreateViolation(ctx context.Context, arg CreateViolationParams) (Violation, error)
-	// 删除预约（只能删除未开始的预约，如果已经到了预约时间，不能删除）
-	DeleteReservation(ctx context.Context, id uuid.UUID) error
+	// 取消预约（只能取消未开始的预约）
+	DeleteReservation(ctx context.Context, id uuid.UUID) (sql.Result, error)
 	// 删除自习室
 	DeleteRoom(ctx context.Context, id int32) error
 	// 删除座位
@@ -40,6 +40,8 @@ type Querier interface {
 	// 参数为：超时时间（分钟）
 	ExpireReservations(ctx context.Context, dollar_1 sql.NullString) ([]ExpireReservationsRow, error)
 	GetReservation(ctx context.Context, id uuid.UUID) (Reservation, error)
+	// 获取预约信息时附带座位所在房间的代码，用于签到
+	GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) (GetReservationWithRoomCodeRow, error)
 	// 获取自习室信息
 	GetRoom(ctx context.Context, id int32) (Room, error)
 	// 自习室实时使用统计（含插座统计）

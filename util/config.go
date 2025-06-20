@@ -31,7 +31,9 @@ type Config struct {
 // 业务参数配置，可通过api修改
 type BusinessConfig struct {
 	// 预约相关配置
+	MinReservationDuration          time.Duration // 预约的最小持续时间
 	MaxReservationDuration          time.Duration // 预约的最大持续时间
+	MinReservationAdvanceDuration   time.Duration // 预约的最小提前时间
 	MaxReservationAdvanceDuration   time.Duration // 预约的最大提前时间
 	CancellableReservationDuration  time.Duration // 预约开始前的可取消时间
 	ReservationRemindBeforeDuration time.Duration // 预约开始前的提醒时间
@@ -59,12 +61,14 @@ func LoadConfig(path string) Config {
 		RefreshTokenDuration: parseDuration(MustGetEnvString("REFRESH_TOKEN_DURATION")),
 
 		BusinessConfig: BusinessConfig{
+			MinReservationDuration:          parseDuration(MustGetEnvString("MIN_RESERVATION_DURATION")),
 			MaxReservationDuration:          parseDuration(MustGetEnvString("MAX_RESERVATION_DURATION")),
+			MinReservationAdvanceDuration:   parseDuration(MustGetEnvString("MIN_RESERVATION_ADVANCE_DURATION")),
 			MaxReservationAdvanceDuration:   parseDuration(MustGetEnvString("MAX_RESERVATION_ADVANCE_DURATION")),
 			CancellableReservationDuration:  parseDuration(MustGetEnvString("CANCELLABLE_RESERVATION_DURATION")),
 			ReservationRemindBeforeDuration: parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-			ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
-			ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_REMIND_BEFORE_DURATION")),
+			ReservationRemindAfterDuration:  parseDuration(MustGetEnvString("RESERVATION_REMIND_AFTER_DURATION")),
+			ReservationViolationDuration:    parseDuration(MustGetEnvString("RESERVATION_VIOLATION_DURATION")),
 		},
 
 		EmailConfig: EmailConfig{
@@ -95,10 +99,7 @@ func MustGetEnvString(key string) string {
 }
 
 func MustGetEnvInt(key string) int {
-	s := os.Getenv(key)
-	if s == "" {
-		log.Fatal().Msgf("环境变量 %s 为空", key)
-	}
+	s := MustGetEnvString(key)
 	i, err := strconv.Atoi(s)
 	if err != nil {
 		log.Fatal().Err(err).Msgf("环境变量 %s 转换为整数失败", key)

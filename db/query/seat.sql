@@ -32,7 +32,7 @@ WHERE
     (sqlc.narg(room_id)::INT IS NULL OR s.room_id = sqlc.narg(room_id)) AND
     (sqlc.narg(has_socket)::BOOLEAN IS NULL OR s.has_socket = sqlc.narg(has_socket)) AND
     (sqlc.narg(is_available)::BOOLEAN IS NULL OR s.is_available = sqlc.narg(is_available))
-ORDER BY s.room_id, s.number
+ORDER BY s.room_id, s.id
 LIMIT $1 OFFSET $2;
 
 -- 更新座位信息

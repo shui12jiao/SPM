@@ -38,6 +38,16 @@ func ToNull[T Nullable](value any) T {
 	}
 }
 
+func ToNullReservationStatus(value *string) NullReservationStatus {
+	if value == nil {
+		return NullReservationStatus{Valid: false}
+	}
+	return NullReservationStatus{
+		ReservationStatus: ReservationStatus(*value),
+		Valid:             true,
+	}
+}
+
 // func ToNullTime(t *time.Time) sql.NullTime {
 // 	if t == nil {
 // 		return sql.NullTime{Valid: false}
