@@ -114,7 +114,7 @@ type listMyReservationRequest struct {
 	StartTime *time.Time `form:"start_time" binding:"omitempty"`
 	EndTime   *time.Time `form:"end_time" binding:"omitempty"`
 	SeatID    *int32     `form:"seat_id" binding:"omitempty,min=1"`
-	Status    *string    `form:"status" binding:"omitempty, reservation_status"` // 使用自定义验证器，确保是有效的预约状态s
+	Status    *string    `form:"status" binding:"omitempty,reservation_status"` // 使用自定义验证器，确保是有效的预约状态s
 }
 
 // listMyReservation 获取当前用户的预约列表
@@ -145,9 +145,12 @@ func (server *Server) listMyReservation(ctx *gin.Context) {
 		Offset:    (req.Page - 1) * req.PageSize,
 		StartTime: db.ToNull[sql.NullTime](req.StartTime),
 		EndTime:   db.ToNull[sql.NullTime](req.EndTime),
-		UserID:    db.ToNull[sql.NullInt32](getUserID(ctx)),
-		SeatID:    db.ToNull[sql.NullInt32](req.SeatID),
-		Status:    db.ToNullReservationStatus(req.Status),
+		UserID: sql.NullInt32{
+			Int32: getUserID(ctx),
+			Valid: true,
+		},
+		SeatID: db.ToNull[sql.NullInt32](req.SeatID),
+		Status: db.ToNullReservationStatus(req.Status),
 	}
 
 	reservations, err := server.store.ListReservation(ctx, arg)
