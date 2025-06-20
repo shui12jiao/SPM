@@ -137,6 +137,8 @@ definitions:
     properties:
       close_time:
         type: string
+      code:
+        type: string
       department:
         type: string
       id:
@@ -877,14 +879,21 @@ paths:
       - application/json
       description: 获取当前登录用户的违规记录，支持分页
       parameters:
-      - description: 页码，默认1
-        in: query
+      - in: query
+        minimum: 1
         name: page
+        required: true
         type: integer
-      - description: 每页数量，默认10
-        in: query
+      - in: query
+        maximum: 50
+        minimum: 5
         name: page_size
+        required: true
         type: integer
+      - description: 可选参数
+        in: query
+        name: reservation_id
+        type: string
       produces:
       - application/json
       responses:
@@ -1015,6 +1024,22 @@ paths:
       consumes:
       - application/json
       parameters:
+      - description: 起始时间 (ISO8601)
+        in: query
+        name: start_time
+        type: string
+      - description: 结束时间 (ISO8601)
+        in: query
+        name: end_time
+        type: string
+      - description: 座位ID
+        in: query
+        name: seat_id
+        type: integer
+      - description: 预约状态
+        in: query
+        name: status
+        type: string
       - description: 页码，从1开始
         in: query
         name: page

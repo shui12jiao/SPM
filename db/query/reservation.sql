@@ -37,11 +37,10 @@ WHERE
   (sqlc.narg(end_time)::TIMESTAMP IS NULL OR end_time <= sqlc.narg(end_time)) AND
   (sqlc.narg(user_id)::INT IS NULL OR user_id = sqlc.narg(user_id)) AND
   (sqlc.narg(seat_id)::INT IS NULL OR seat_id = sqlc.narg(seat_id)) AND
-  (sqlc.narg(status)::VARCHAR(20) IS NULL OR status = sqlc.narg(status))
+  (sqlc.narg(status)::reservation_status IS NULL OR status = sqlc.narg(status))
 ORDER BY
-  CASE WHEN sqlc.narg(sort_by) = 'start_time' THEN start_time END DESC,
   created_at DESC
-LIMIT $1 OFFSET $2;
+LIMIT sqlc.arg('limit') OFFSET sqlc.arg('offset');
 
 
 -- 更新预约状态（含自动签到时间）

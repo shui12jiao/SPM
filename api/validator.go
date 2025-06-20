@@ -1,6 +1,7 @@
 package api
 
 import (
+	"man/db"
 	"man/util"
 
 	"github.com/gin-gonic/gin/binding"
@@ -19,11 +20,26 @@ var (
 		}
 		return false
 	}
+
+	validReservationStatus validator.Func = func(fieldLevel validator.FieldLevel) bool {
+		if status, ok := fieldLevel.Field().Interface().(string); ok {
+			switch db.ReservationStatus(status) {
+			case
+				db.ReservationStatusReserved,
+				db.ReservationStatusCompleted,
+				db.ReservationStatusCanceled,
+				db.ReservationStatusViolated:
+				return true
+			}
+		}
+		return false
+	}
 )
 
 func registerValidation() {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("password", validPassword)
+		v.RegisterValidation("reservation_status", validReservationStatus)
 		// v.RegisterValidation("email", validEmail) // binding现在已经支持了email的验证
 	}
 }

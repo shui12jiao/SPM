@@ -12,7 +12,11 @@ import (
 // listMyViolation获取我的违规记录
 // GET /me/violation
 
-type listMyViolationRequest = Pagination
+type listMyViolationRequest struct {
+	Pagination
+	// 可选参数
+	ReservationID *uuid.UUID `form:"reservation_id"` // 预约ID
+}
 
 // listMyViolation 获取当前用户的违规记录
 // @Summary 获取我的违规记录
@@ -20,8 +24,7 @@ type listMyViolationRequest = Pagination
 // @Tags Violation
 // @Accept json
 // @Produce json
-// @Param page query int false "页码，默认1"
-// @Param page_size query int false "每页数量，默认10"
+// @Param request query listMyViolationRequest false "查询参数"
 // @Success 200 {array} db.Violation
 // @Failure 400
 // @Router /me/violation [get]

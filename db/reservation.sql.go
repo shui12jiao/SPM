@@ -134,39 +134,36 @@ func (q *Queries) GetReservationWithRoomCode(ctx context.Context, id uuid.UUID) 
 const listReservation = `-- name: ListReservation :many
 SELECT id, user_id, seat_id, start_time, end_time, status, checkin_time, created_at FROM reservation 
 WHERE
-  ($3::TIMESTAMP IS NULL OR start_time >= $3) AND
-  ($4::TIMESTAMP IS NULL OR end_time <= $4) AND
-  ($5::INT IS NULL OR user_id = $5) AND
-  ($6::INT IS NULL OR seat_id = $6) AND
-  ($7::VARCHAR(20) IS NULL OR status = $7)
+  ($1::TIMESTAMP IS NULL OR start_time >= $1) AND
+  ($2::TIMESTAMP IS NULL OR end_time <= $2) AND
+  ($3::INT IS NULL OR user_id = $3) AND
+  ($4::INT IS NULL OR seat_id = $4) AND
+  ($5::reservation_status IS NULL OR status = $5)
 ORDER BY
-  CASE WHEN $8 = 'start_time' THEN start_time END DESC,
   created_at DESC
-LIMIT $1 OFFSET $2
+LIMIT $7 OFFSET $6
 `
 
 type ListReservationParams struct {
-	Limit     int32          `json:"limit"`
-	Offset    int32          `json:"offset"`
-	StartTime sql.NullTime   `json:"start_time"`
-	EndTime   sql.NullTime   `json:"end_time"`
-	UserID    sql.NullInt32  `json:"user_id"`
-	SeatID    sql.NullInt32  `json:"seat_id"`
-	Status    sql.NullString `json:"status"`
-	SortBy    interface{}    `json:"sort_by"`
+	StartTime sql.NullTime          `json:"start_time"`
+	EndTime   sql.NullTime          `json:"end_time"`
+	UserID    sql.NullInt32         `json:"user_id"`
+	SeatID    sql.NullInt32         `json:"seat_id"`
+	Status    NullReservationStatus `json:"status"`
+	Offset    int32                 `json:"offset"`
+	Limit     int32                 `json:"limit"`
 }
 
 // 动态查询, 可能参数start_time, end_time, limit, offset, user_id, seat_id, status
 func (q *Queries) ListReservation(ctx context.Context, arg ListReservationParams) ([]Reservation, error) {
 	rows, err := q.db.QueryContext(ctx, listReservation,
-		arg.Limit,
-		arg.Offset,
 		arg.StartTime,
 		arg.EndTime,
 		arg.UserID,
 		arg.SeatID,
 		arg.Status,
-		arg.SortBy,
+		arg.Offset,
+		arg.Limit,
 	)
 	if err != nil {
 		return nil, err

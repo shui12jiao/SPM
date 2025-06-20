@@ -55,14 +55,13 @@ func (server *Server) getReservation(ctx *gin.Context) {
 }
 
 type listReservationRequest struct {
-	Page     int32 `form:"page" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=50"`
+	Pagination
 	// 可为空参数
 	StartTime *time.Time `form:"start_time" binding:"omitempty"`
 	EndTime   *time.Time `form:"end_time" binding:"omitempty"`
 	UserID    *int32     `form:"user_id" binding:"omitempty,min=1"`
 	SeatID    *int32     `form:"seat_id" binding:"omitempty,min=1"`
-	Status    *string    `form:"status" binding:"omitempty"`
+	Status    *string    `form:"status" binding:"omitempty,reservation_status"` // 使用自定义验证器，确保是有效的预约状态
 }
 
 // listReservation 获取预约列表
@@ -97,7 +96,7 @@ func (server *Server) listReservation(ctx *gin.Context) {
 		EndTime:   db.ToNull[sql.NullTime](req.EndTime),
 		UserID:    db.ToNull[sql.NullInt32](req.UserID),
 		SeatID:    db.ToNull[sql.NullInt32](req.SeatID),
-		Status:    db.ToNull[sql.NullString](req.Status),
+		Status:    db.ToNullReservationStatus(req.Status),
 	}
 
 	seats, err := server.store.ListReservation(ctx, arg)
@@ -109,13 +108,24 @@ func (server *Server) listReservation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, seats)
 }
 
-type listMyReservationRequest = Pagination
+type listMyReservationRequest struct {
+	Pagination
+	// 可为空参数
+	StartTime *time.Time `form:"start_time" binding:"omitempty"`
+	EndTime   *time.Time `form:"end_time" binding:"omitempty"`
+	SeatID    *int32     `form:"seat_id" binding:"omitempty,min=1"`
+	Status    *string    `form:"status" binding:"omitempty, reservation_status"` // 使用自定义验证器，确保是有效的预约状态s
+}
 
 // listMyReservation 获取当前用户的预约列表
 // @Summary 获取当前用户的预约记录（分页）
 // @Tags Reservation
 // @Accept json
 // @Produce json
+// @Param start_time query string false "起始时间 (ISO8601)"
+// @Param end_time query string false "结束时间 (ISO8601)"
+// @Param seat_id query int false "座位ID"
+// @Param status query string false "预约状态"
 // @Param page query int true "页码，从1开始"
 // @Param page_size query int true "每页数量 (5–50)"
 // @Success 200 {array} db.Reservation
@@ -131,9 +141,13 @@ func (server *Server) listMyReservation(ctx *gin.Context) {
 	}
 
 	arg := db.ListReservationParams{
-		UserID: db.ToNull[sql.NullInt32](getUserID(ctx)),
-		Limit:  req.PageSize,
-		Offset: (req.Page - 1) * req.PageSize,
+		Limit:     req.PageSize,
+		Offset:    (req.Page - 1) * req.PageSize,
+		StartTime: db.ToNull[sql.NullTime](req.StartTime),
+		EndTime:   db.ToNull[sql.NullTime](req.EndTime),
+		UserID:    db.ToNull[sql.NullInt32](getUserID(ctx)),
+		SeatID:    db.ToNull[sql.NullInt32](req.SeatID),
+		Status:    db.ToNullReservationStatus(req.Status),
 	}
 
 	reservations, err := server.store.ListReservation(ctx, arg)

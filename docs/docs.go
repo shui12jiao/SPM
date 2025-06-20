@@ -905,15 +905,24 @@ const docTemplate = `{
                 "summary": "获取我的违规记录",
                 "parameters": [
                     {
+                        "minimum": 1,
                         "type": "integer",
-                        "description": "页码，默认1",
                         "name": "page",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
+                        "maximum": 50,
+                        "minimum": 5,
                         "type": "integer",
-                        "description": "每页数量，默认10",
                         "name": "page_size",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "可选参数",
+                        "name": "reservation_id",
                         "in": "query"
                     }
                 ],
@@ -1123,6 +1132,30 @@ const docTemplate = `{
                 ],
                 "summary": "获取当前用户的预约记录（分页）",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "起始时间 (ISO8601)",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "结束时间 (ISO8601)",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "座位ID",
+                        "name": "seat_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "预约状态",
+                        "name": "status",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "description": "页码，从1开始",
@@ -1758,6 +1791,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "close_time": {
+                    "type": "string"
+                },
+                "code": {
                     "type": "string"
                 },
                 "department": {
