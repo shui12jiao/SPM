@@ -2,6 +2,7 @@ package api
 
 import (
 	"man/db"
+	"man/task"
 	"man/util"
 	"testing"
 	"time"
@@ -25,7 +26,7 @@ func newTestServer(t *testing.T, store db.Store) *Server {
 			ReservationViolationDuration:    30 * time.Minute,
 		},
 	}
-	server, err := NewServer(config, store, nil)
+	server, err := NewServer(config, store, task.NewScheduler(config, store))
 	require.NoError(t, err)
 
 	return server
